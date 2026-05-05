@@ -20,20 +20,31 @@ const INLINE_PLACEHOLDER = encodeURIComponent(`
 
 export const MEDIA_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${INLINE_PLACEHOLDER}`;
 
-export function resolveMediaUrl(value) {
+export function resolveMediaUrl(value, cacheBust = true) {
   if (!value) {
     return "";
   }
 
-  if (/^(?:https?:)?\/\//i.test(value) || value.startsWith("data:") || value.startsWith("blob:")) {
-    return value;
+  let url = value;
+
+  // Backend uploads path fix for dev
+  if (value.startsWith('/HIRA/backend/uploads/')) {
+    url = `http://localhost/HIRA/backend${value.slice('/HIRA/backend'.length)}`;
+  } else if (/^(?:https?:)?\/\//i.test(value) || value.startsWith("data:") || value.startsWith("blob:")) {
+    url = value;
+  } else if (value.startsWith("/")) {
+    url = value;
+  } else {
+    url = `/${value.replace(/^\/+/, "")}`;
   }
 
-  if (value.startsWith("/")) {
-    return value;
+  // Cache bust
+  if (cacheBust) {
+    const separator = url.includes('?') ? '&' : '?';
+    url += `${separator}v=${Date.now()}`;
   }
 
-  return `/${value.replace(/^\/+/, "")}`;
+  return url;
 }
 
 export function withPlaceholder(value) {

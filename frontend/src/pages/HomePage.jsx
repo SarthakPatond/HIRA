@@ -219,12 +219,10 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-x-8 bottom-8 rounded-[1.8rem] bg-gradient-to-r from-black/80 via-black/70 to-hira-red/70 p-7 text-white">
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-wheat">
-                    USA to Ujjain
+                    {content.story?.overlay_eyebrow || 'USA to Ujjain'}
                   </p>
                   <p className="mt-4 max-w-xl text-lg leading-8 text-white/86">
-                    A brand born from movement, memory, and the belief that
-                    everyday staples can carry both emotional depth and modern
-                    confidence.
+                    {content.story?.overlay_text || 'A brand born from movement, memory, and the belief that everyday staples can carry both emotional depth and modern confidence.'}
                   </p>
                 </div>
               </div>
@@ -233,43 +231,45 @@ export default function HomePage() {
       </Section>
 
       <Section className="relative bg-white/60">
-          <div className="overflow-hidden rounded-[2rem] border border-hira-orange/10 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.14),transparent_32%),linear-gradient(135deg,rgba(255,247,237,0.98),rgba(255,255,255,0.92))] p-8 shadow-soft sm:p-10 lg:p-14">
-            <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
-              <Reveal>
-                <SectionHeading
-                  eyebrow="Heritage"
-                  title={content.heritage?.title}
-                  description={content.heritage?.text}
-                />
-                <div className="mt-8 rounded-[1.8rem] bg-hira-ink px-6 py-7 text-white shadow-soft">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-wheat">
-                    Why Ujjain Matters
-                  </p>
-                  <p className="mt-4 font-display text-3xl leading-tight">
-                    A place where staple foods are not just sourced, but known.
-                  </p>
-                </div>
-              </Reveal>
+          <Container className="max-w-7xl mx-auto px-6 py-16">
+            <div className="overflow-hidden rounded-[2rem] border border-hira-orange/10 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.14),transparent_32%),linear-gradient(135deg,rgba(255,247,237,0.98),rgba(255,255,255,0.92))] p-8 shadow-soft sm:p-10 lg:p-14">
+              <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+                <Reveal>
+                  <SectionHeading
+                    eyebrow="Heritage"
+                    title={content.heritage?.title}
+                    description={content.heritage?.text}
+                  />
+                  <div className="mt-8 rounded-[1.8rem] bg-hira-ink px-6 py-7 text-white shadow-soft">
+                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-wheat">
+                      {content.heritage?.subtitle || 'Why Ujjain Matters'}
+                    </p>
+                    <p className="mt-4 font-display text-3xl leading-tight">
+                      {content.heritage?.tagline || 'A place where staple foods are not just sourced, but known.'}
+                    </p>
+                  </div>
+                </Reveal>
 
-              <div className="grid gap-5 md:grid-cols-3">
-                {heritageHighlights.map((item) => (
-                  <Reveal key={item.title}>
-                    <article className="surface-panel h-full rounded-[1.8rem] p-6">
-                      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-forest">
-                        Rooted Insight
-                      </p>
-                      <h3 className="mt-4 font-display text-3xl text-hira-ink">
-                        {item.title}
-                      </h3>
-                      <p className="mt-4 text-sm leading-7 text-hira-ink/68">
-                        {item.text}
-                      </p>
-                    </article>
-                  </Reveal>
-                ))}
+                <div className="grid gap-5 md:grid-cols-3">
+                  {heritageHighlights.map((item, index) => (
+                    <Reveal key={item.title}>
+                      <article className="surface-panel h-full rounded-[1.8rem] p-6">
+                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-forest">
+                          {content.heritage?.insights[index]?.label || 'Rooted Insight'}
+                        </p>
+                        <h3 className="mt-4 font-display text-3xl text-hira-ink">
+                          {item.title}
+                        </h3>
+                        <p className="mt-4 text-sm leading-7 text-hira-ink/68">
+                          {item.text}
+                        </p>
+                      </article>
+                    </Reveal>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          </Container>
       </Section>
 
       <Section className="bg-white">
@@ -304,7 +304,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+          {/* <div className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
             <Reveal>
               <article className="group relative overflow-hidden rounded-2xl border border-hira-orange/10 bg-hira-cream/70 p-4 shadow-soft">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-hira-green/10" />
@@ -335,7 +335,70 @@ export default function HomePage() {
                 </Reveal>
               ))}
             </div>
-          </div>
+          </div> */}
+          <div className="mt-10 grid md:grid-cols-3 gap-8 items-stretch">
+
+  {/* FEATURED CATEGORY */}
+  <Reveal>
+    <article className="h-full flex flex-col overflow-hidden rounded-2xl border border-hira-orange/10 bg-hira-cream/70 shadow-soft group">
+
+      <ContentImage
+        src={activeCategoryDetails?.image}
+        alt={activeCategoryDetails?.name}
+        className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+        fallbacks={getCategoryFallbacks(activeCategoryDetails?.name)}
+      />
+
+      <div className="p-6 flex-grow font-sans">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
+          Featured Category
+        </p>
+
+        <h3 className="mt-3 font-display text-3xl font-semibold leading-snug text-hira-ink">
+          {activeCategoryDetails?.name}
+        </h3>
+
+        <p className="mt-3 text-base leading-7 text-hira-ink/70">
+          {activeCategoryDetails?.description}
+        </p>
+      </div>
+
+    </article>
+  </Reveal>
+
+
+  {/* PRODUCTS */}
+  {featuredProducts.map((product) => (
+    <Reveal key={product.id}>
+      <article className="h-full flex flex-col overflow-hidden rounded-2xl border border-hira-orange/10 bg-white shadow-soft group">
+
+        <ContentImage
+          src={product.image}
+          alt={product.name}
+          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+
+        <div className="p-6 flex-grow font-sans">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-green">
+            Pantry Essential
+          </p>
+
+          {/* FIX: same font + weight as left */}
+          <h3 className="mt-3 font-display text-3xl font-semibold leading-snug text-hira-ink">
+            {product.name}
+          </h3>
+
+          {/* FIX: same size/line-height/color as left */}
+          <p className="mt-3 text-base leading-7 text-hira-ink/70">
+            {product.description}
+          </p>
+        </div>
+
+      </article>
+    </Reveal>
+  ))}
+
+</div>
       </Section>
 
       <Section className="bg-hira-cream/70">

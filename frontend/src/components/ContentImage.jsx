@@ -8,11 +8,11 @@ export default function ContentImage({
   fallbacks = [],
   ...props
 }) {
-  const sources = useMemo(
+const sources = useMemo(
     () =>
       [src, ...fallbacks]
         .filter(Boolean)
-        .map((item) => resolveMediaUrl(item))
+        .map((item) => resolveMediaUrl(item, true))
         .concat(MEDIA_PLACEHOLDER),
     [fallbacks, src]
   );

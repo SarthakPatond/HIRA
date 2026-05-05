@@ -16,6 +16,13 @@ export default function ProductCard({ product }) {
             "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?auto=format&fit=crop&w=900&q=80"
           ]}
         />
+        {product.is_coming_soon && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <span className="rounded-full bg-hira-orange/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+              Coming Soon
+            </span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-transparent to-transparent opacity-90" />
         <div className="absolute bottom-5 left-5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-hira-orange shadow-sm backdrop-blur">
           {product.category}
