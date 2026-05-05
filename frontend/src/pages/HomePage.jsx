@@ -338,7 +338,36 @@ export default function HomePage() {
           </div> */}
           <div className="mt-10 grid md:grid-cols-3 gap-8 items-stretch">
 
-  {/* FEATURED CATEGORY */}
+  {/* FEATURED CATEGORY - conditional render if image exists */}
+  {/* {activeCategoryDetails?.image && (
+    <Reveal>
+      <article className="h-full flex flex-col overflow-hidden rounded-2xl border border-hira-orange/10 bg-hira-cream/70 shadow-soft group">
+
+        <ContentImage
+          src={activeCategoryDetails?.image}
+          alt={activeCategoryDetails?.name}
+          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+          fallbacks={getCategoryFallbacks(activeCategoryDetails?.name)}
+        />
+
+        <div className="p-6 flex-grow font-sans">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
+            Featured Category
+          </p>
+
+          <h3 className="mt-3 font-display text-3xl font-semibold leading-snug text-hira-ink">
+            {activeCategoryDetails?.name}
+          </h3>
+
+          <p className="mt-3 text-base leading-7 text-hira-ink/70">
+            {activeCategoryDetails?.description}
+          </p>
+        </div>
+
+      </article>
+    </Reveal>
+  )} */}
+{activeCategoryDetails?.image?.startsWith?.("/uploads/") && (
   <Reveal>
     <article className="h-full flex flex-col overflow-hidden rounded-2xl border border-hira-orange/10 bg-hira-cream/70 shadow-soft group">
 
@@ -365,6 +394,7 @@ export default function HomePage() {
 
     </article>
   </Reveal>
+)}
 
 
   {/* PRODUCTS */}
@@ -421,10 +451,10 @@ export default function HomePage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                   <div className="absolute inset-x-6 bottom-6 rounded-[1.6rem] bg-white/86 p-6 backdrop-blur-md">
-                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
+                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white">
                       Something exciting is taking shape...
                     </p>
-                    <h3 className="mt-3 font-display text-3xl text-hira-ink">
+                    <h3 className="mt-3 font-display text-3xl text-white">
                       {item.title}
                     </h3>
                   </div>

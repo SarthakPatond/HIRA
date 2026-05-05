@@ -14,7 +14,11 @@ function ensure_upload_directory(): string
 
 function save_uploaded_image(array $file): ?string
 {
+    echo "FILES DATA:<br>";
+    print_r($_FILES);
+    
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        echo "Upload error: " . $file['error'] . "<br>";
         return null;
     }
 
@@ -27,24 +31,39 @@ function save_uploaded_image(array $file): ?string
 
     $tmpName = $file['tmp_name'] ?? '';
     if (!is_uploaded_file($tmpName)) {
+        echo "Not uploaded file<br>";
         return null;
     }
 
     $mimeType = mime_content_type($tmpName) ?: '';
     if (!isset($allowedMimeTypes[$mimeType])) {
-        throw new RuntimeException('Only JPG, PNG, WEBP, and GIF images are allowed.');
+        echo "Invalid mime: " . $mimeType . "<br>";
+        return null;
     }
 
     if (($file['size'] ?? 0) > 5 * 1024 * 1024) {
-        throw new RuntimeException('Image size must be less than 5 MB.');
+        echo "File too large<br>";
+        return null;
     }
 
-    $directory = ensure_upload_directory();
-    $fileName = date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.' . $allowedMimeTypes[$mimeType];
-    $destination = $directory . '/' . $fileName;
+    $uploadDir = __DIR__ . "/../uploads/";
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+    chmod($uploadDir, 0777);
 
-    if (!move_uploaded_file($tmpName, $destination)) {
-        throw new RuntimeException('Image upload failed.');
+    $filename = time() . "-" . basename($file["name"]);
+    $fileName = pathinfo($filename, PATHINFO_FILENAME) . '.' . $allowedMimeTypes[$mimeType];
+    $targetFile = $uploadDir . $fileName;
+
+    echo "Saving to: " . $targetFile . "<br>";
+    echo "Dir writable: " . (is_writable($uploadDir) ? "YES" : "NO") . "<br>";
+
+    if (!move_uploaded_file($tmpName, $targetFile)) {
+        echo "Upload failed - check permissions<br>";
+        return null;
+    } else {
+        echo "Upload SUCCESS: " . $targetFile . "<br>";
     }
 
     return $fileName;

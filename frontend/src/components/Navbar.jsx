@@ -27,14 +27,14 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-hira-orange/10 bg-white/90 backdrop-blur-xl">
       <Container className="flex items-center justify-between py-4">
         <Link to="/" className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-hira-orange to-hira-red text-sm font-bold text-white shadow-soft">
-            H
+          <div className="grid h-14 w-16 place-items-center rounded-2xl bg-gradient-to-br from-hira-orange to-hira-red text-sm font-bold text-white shadow-soft">
+            <img className="h-16 w-16" src="../../public/Hiraa Logo Final.png" alt="Hira FMCG Logo" />
           </div>
           <div>
             <p className="font-display text-2xl font-semibold text-hira-ink">
-              Hira FMCG
+              Hira FMCG 
             </p>
-            <p className="text-[11px] uppercase tracking-[0.3em] text-hira-orange">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-hira-orange">
               Ujjain to Modern Kitchens
             </p>
           </div>

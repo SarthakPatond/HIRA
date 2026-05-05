@@ -9,11 +9,14 @@ export default function ContentImage({
   ...props
 }) {
 const sources = useMemo(
-    () =>
-      [src, ...fallbacks]
+    () => {
+      const primary = resolveMediaUrl(src, true);
+      console.log("FINAL IMG SRC (primary):", primary);
+      return [src, ...fallbacks]
         .filter(Boolean)
         .map((item) => resolveMediaUrl(item, true))
-        .concat(MEDIA_PLACEHOLDER),
+        .concat(MEDIA_PLACEHOLDER);
+    },
     [fallbacks, src]
   );
   const [index, setIndex] = useState(0);
@@ -22,7 +25,8 @@ const sources = useMemo(
     setIndex(0);
   }, [sources]);
 
-  function handleError() {
+function handleError() {
+    console.log("FINAL IMG SRC FAILED at index", index, ":", sources[index]);
     setIndex((current) =>
       current < sources.length - 1 ? current + 1 : current
     );
@@ -34,6 +38,7 @@ const sources = useMemo(
       src={sources[index]}
       alt={alt}
       className={className}
+      onLoad={() => console.log("FINAL IMG SRC LOADED:", sources[index])}
       onError={handleError}
     />
   );

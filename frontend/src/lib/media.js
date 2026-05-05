@@ -25,11 +25,14 @@ export function resolveMediaUrl(value, cacheBust = true) {
     return "";
   }
 
-  let url = value;
-
-  // Backend uploads path fix for dev
-  if (value.startsWith('/HIRA/backend/uploads/')) {
-    url = `http://localhost/HIRA/backend${value.slice('/HIRA/backend'.length)}`;
+  // Fixed backend uploads path handling per debug requirements
+  let url;
+  if (value.startsWith("http")) {
+    url = value;
+  } else if (value.startsWith("/HIRA/backend/uploads/")) {
+    url = `http://localhost${value}`;
+  } else if (value.startsWith("/uploads/")) {
+    url = `http://localhost/HIRA/backend${value}`;
   } else if (/^(?:https?:)?\/\//i.test(value) || value.startsWith("data:") || value.startsWith("blob:")) {
     url = value;
   } else if (value.startsWith("/")) {
