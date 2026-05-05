@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #292524;
+  background: #fff7ed;
+  font-family: "Manrope", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  color: #292524;
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.14), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.14), transparent 22%),
+    linear-gradient(180deg, #fff7ed 0%, #fffaf3 44%, #ffffff 100%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.18);
+}
+
+.container-shell {
+  @apply mx-auto w-full max-w-7xl px-6;
+}
+
+.glass-panel {
+  @apply rounded-[2rem] border border-hira-orange/10 bg-white/85 backdrop-blur;
+}
+
+.section-pad {
+  @apply py-16;
+}
+
+.surface-card {
+  @apply rounded-[2rem] border border-hira-orange/10 bg-white shadow-soft;
+}
+
+.surface-panel {
+  @apply rounded-[2rem] border border-hira-orange/10 bg-white/85 shadow-soft backdrop-blur;
+}
+
+.touch-input {
+  @apply w-full rounded-2xl border border-hira-orange/15 bg-hira-cream px-5 py-4 text-base text-hira-ink outline-none transition focus:border-hira-orange focus:ring-2 focus:ring-hira-orange/10;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.story-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.product-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hero-scroll-line {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9));
+}
