@@ -410,33 +410,9 @@ export default function HomePage() {
 
 
   {/* PRODUCTS */}
-  {(featuredProducts || []).map((product, index) => (
-    <Reveal key={product?.id ?? index}>
-      <article className="h-full flex flex-col overflow-hidden rounded-2xl border border-hira-orange/10 bg-white shadow-soft group">
-
-        <ContentImage
-          src={product?.image}
-          alt={product?.name}
-          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-
-        <div className="p-6 flex-grow font-sans">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-green">
-            Pantry Essential
-          </p>
-
-          {/* FIX: same font + weight as left */}
-          <h3 className="mt-3 font-display text-3xl font-semibold leading-snug text-hira-ink">
-            {product?.name}
-          </h3>
-
-          {/* FIX: same size/line-height/color as left */}
-          <p className="mt-3 text-base leading-7 text-hira-ink/70">
-            {product?.description}
-          </p>
-        </div>
-
-      </article>
+  {(featuredProducts || []).map((product) => (
+    <Reveal key={product?.id}>
+      <ProductCard product={product} />
     </Reveal>
   ))}
 

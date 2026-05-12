@@ -33,6 +33,8 @@ export default function ContentImage({
       src={sources[index]}
       alt={alt}
       className={className}
+      loading={props.loading ?? "lazy"}
+      decoding={props.decoding ?? "async"}
       onLoad={() => {}}
       onError={handleError}
     />
