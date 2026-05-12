@@ -78,9 +78,13 @@ function productMatchesCategory(productCategory, categoryName) {
 
 function TrustBadge({ item, index }) {
   const tone = trustBadgeTones[index % trustBadgeTones.length];
-  const initials = item.title
+
+  // Prevent crashes if title contains extra whitespace / empty tokens
+  const initials = (item?.title || "")
+    .trim()
     .split(/\s+/)
-    .map((word) => word[0])
+    .map((word) => word?.[0])
+    .filter(Boolean)
     .join("")
     .slice(0, 3);
 
@@ -91,8 +95,8 @@ function TrustBadge({ item, index }) {
       >
         {initials}
       </div>
-      <h3 className="mt-5 font-display text-3xl text-hira-ink">{item.title}</h3>
-      <p className="mt-2 text-sm leading-7 text-hira-ink/65">{item.text}</p>
+      <h3 className="mt-5 font-display text-3xl text-hira-ink">{item?.title}</h3>
+      <p className="mt-2 text-sm leading-7 text-hira-ink/65">{item?.text}</p>
     </article>
   );
 }
@@ -127,7 +131,7 @@ export default function HomePage() {
 
     const hasActive = categoryTabs.some((category) => category.name === activeCategory);
     if (!hasActive) {
-      setActiveCategory(categoryTabs[0].name);
+      setActiveCategory(categoryTabs?.[0]?.name || "");
     }
   }, [activeCategory, categoryTabs]);
 
@@ -151,8 +155,16 @@ export default function HomePage() {
   const comingSoonItems = content?.coming_soon?.items || [];
   const trustItems = content?.trust?.items || [];
   const activeCategoryDetails =
-    categoryTabs.find((category) => category.name === activeCategory) || categoryTabs[0];
-  const featuredProducts = filteredProducts.slice(0, 3);
+    categoryTabs.find((category) => category.name === activeCategory) || null;
+
+  const heritageInsights = Array.isArray(content?.heritage?.insights)
+    ? content.heritage.insights
+    : [];
+
+  const featuredProducts = (Array.isArray(filteredProducts) ? filteredProducts : []).slice(
+    0,
+    3
+  );
 
   function getCategoryFallbacks(categoryName) {
     const key = normalizeCategory(categoryName);
@@ -252,10 +264,10 @@ export default function HomePage() {
 
                 <div className="grid gap-5 md:grid-cols-3">
                   {heritageHighlights.map((item, index) => (
-                    <Reveal key={item.title}>
+                    <Reveal key={item?.title ?? index}>
                       <article className="surface-panel h-full rounded-[1.8rem] p-6">
                         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-forest">
-                          {content.heritage?.insights[index]?.label || 'Rooted Insight'}
+                          {heritageInsights[index]?.label || "Rooted Insight"}
                         </p>
                         <h3 className="mt-4 font-display text-3xl text-hira-ink">
                           {item.title}
@@ -398,13 +410,13 @@ export default function HomePage() {
 
 
   {/* PRODUCTS */}
-  {featuredProducts.map((product) => (
-    <Reveal key={product.id}>
+  {(featuredProducts || []).map((product, index) => (
+    <Reveal key={product?.id ?? index}>
       <article className="h-full flex flex-col overflow-hidden rounded-2xl border border-hira-orange/10 bg-white shadow-soft group">
 
         <ContentImage
-          src={product.image}
-          alt={product.name}
+          src={product?.image}
+          alt={product?.name}
           className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
@@ -415,12 +427,12 @@ export default function HomePage() {
 
           {/* FIX: same font + weight as left */}
           <h3 className="mt-3 font-display text-3xl font-semibold leading-snug text-hira-ink">
-            {product.name}
+            {product?.name}
           </h3>
 
           {/* FIX: same size/line-height/color as left */}
           <p className="mt-3 text-base leading-7 text-hira-ink/70">
-            {product.description}
+            {product?.description}
           </p>
         </div>
 
@@ -476,7 +488,7 @@ export default function HomePage() {
 
             <div className="grid gap-5 sm:grid-cols-2">
               {trustItems.map((item, index) => (
-                <Reveal key={item.title}>
+                <Reveal key={item?.title ?? index}>
                   <TrustBadge item={item} index={index} />
                 </Reveal>
               ))}

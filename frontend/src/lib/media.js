@@ -20,12 +20,12 @@ const INLINE_PLACEHOLDER = encodeURIComponent(`
 
 export const MEDIA_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${INLINE_PLACEHOLDER}`;
 
-export function resolveMediaUrl(value, cacheBust = true) {
+export function resolveMediaUrl(value) {
   if (!value) {
     return "";
   }
 
-  // Fixed backend uploads path handling per debug requirements
+  // Stable backend uploads path handling (NO cache-busting)
   let url;
   if (value.startsWith("http")) {
     url = value;
@@ -33,7 +33,11 @@ export function resolveMediaUrl(value, cacheBust = true) {
     url = `http://localhost${value}`;
   } else if (value.startsWith("/uploads/")) {
     url = `http://localhost/HIRA/backend${value}`;
-  } else if (/^(?:https?:)?\/\//i.test(value) || value.startsWith("data:") || value.startsWith("blob:")) {
+  } else if (
+    /^(?:https?:)?\/\//i.test(value) ||
+    value.startsWith("data:") ||
+    value.startsWith("blob:")
+  ) {
     url = value;
   } else if (value.startsWith("/")) {
     url = value;
@@ -41,12 +45,7 @@ export function resolveMediaUrl(value, cacheBust = true) {
     url = `/${value.replace(/^\/+/, "")}`;
   }
 
-  // Cache bust
-  if (cacheBust) {
-    const separator = url.includes('?') ? '&' : '?';
-    url += `${separator}v=${Date.now()}`;
-  }
-
+  // IMPORTANT: do not append Date.now()/random cache-busting params
   return url;
 }
 

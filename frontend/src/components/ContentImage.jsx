@@ -8,25 +8,20 @@ export default function ContentImage({
   fallbacks = [],
   ...props
 }) {
-const sources = useMemo(
-    () => {
-      const primary = resolveMediaUrl(src, true);
-      console.log("FINAL IMG SRC (primary):", primary);
-      return [src, ...fallbacks]
-        .filter(Boolean)
-        .map((item) => resolveMediaUrl(item, true))
-        .concat(MEDIA_PLACEHOLDER);
-    },
-    [fallbacks, src]
-  );
+  const sources = useMemo(() => {
+    return [src, ...fallbacks]
+      .filter(Boolean)
+      .map((item) => resolveMediaUrl(item))
+      .concat(MEDIA_PLACEHOLDER);
+  }, [fallbacks, src]);
+
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     setIndex(0);
   }, [sources]);
 
-function handleError() {
-    console.log("FINAL IMG SRC FAILED at index", index, ":", sources[index]);
+  function handleError() {
     setIndex((current) =>
       current < sources.length - 1 ? current + 1 : current
     );
@@ -38,7 +33,7 @@ function handleError() {
       src={sources[index]}
       alt={alt}
       className={className}
-      onLoad={() => console.log("FINAL IMG SRC LOADED:", sources[index])}
+      onLoad={() => {}}
       onError={handleError}
     />
   );
