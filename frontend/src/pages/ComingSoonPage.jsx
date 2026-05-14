@@ -55,14 +55,14 @@ export default function ComingSoonPage() {
           <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {content.coming_soon.items.map((item, index) => (
               <Reveal key={item.title}>
-                <article className="overflow-hidden rounded-[2.2rem] border border-[#d7c084]/[0.18] bg-[#130f0c] shadow-soft">
+                <article className="overflow-hidden rounded-[2.2rem] border border-hira-orange/15 bg-[#F8EBDD] shadow-soft">
                   <div className="relative">
                     <img
                       src={item.image}
                       alt={item.title}
                       className="h-80 w-full scale-[1.03] object-cover blur-[3px]"
                     />
-                    <div className="absolute inset-0 bg-black/45" />
+                    <div className="absolute inset-0 bg-hira-ink/10" />
                     <div
                       className="absolute inset-0 opacity-30"
                       style={{
@@ -70,7 +70,7 @@ export default function ComingSoonPage() {
                         backgroundSize: "cover"
                       }}
                     />
-                    <div className="absolute inset-x-5 bottom-5 rounded-[1.7rem] border border-[#d7c084]/[0.2] bg-white/[0.86] p-5">
+                    <div className="absolute inset-x-5 bottom-5 rounded-[1.7rem] border border-hira-orange/15 bg-white/[0.86] p-5">
                       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-hira-orange">
                         Coming Soon
                       </p>
@@ -89,16 +89,16 @@ export default function ComingSoonPage() {
             ))}
           </div>
 
-          <div className="mt-12 rounded-[2.5rem] border border-[#d7c084]/[0.18] bg-[#140f0b] p-8 text-white shadow-soft sm:p-10">
+          <div className="mt-12 rounded-[2.5rem] border border-hira-orange/15 bg-[#F8EBDD] p-8 text-hira-ink shadow-soft sm:p-10">
             <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-gold">
                   Early Interest
                 </p>
-                <h3 className="mt-4 font-display text-4xl">
+                <h3 className="mt-4 font-display text-4xl text-hira-forest">
                   Want first access when the new line is ready?
                 </h3>
-                <p className="mt-4 text-lg leading-8 text-white/78">
+                <p className="mt-4 text-lg leading-8 text-hira-ink/75">
                   If you are a stockist, distributor, or repacking partner, use
                   the B2B portal to register interest before the public reveal.
                 </p>
@@ -112,7 +112,7 @@ export default function ComingSoonPage() {
                 </Link>
                 <Link
                   to="/products"
-                  className="rounded-full border border-white/20 bg-white/10 px-6 py-3 font-semibold text-white"
+                  className="rounded-full border border-hira-orange/15 bg-white/75 px-6 py-3 font-semibold text-hira-forest transition hover:bg-white/90"
                 >
                   View Live Products
                 </Link>

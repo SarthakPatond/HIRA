@@ -84,7 +84,7 @@ export default function InsightsPage() {
                   </p>
                 </article>
               </Reveal>
-            ))}
+            ))};
           </div>
 
           <div className="mt-14">
@@ -99,7 +99,7 @@ export default function InsightsPage() {
               </div>
               <Link
                 to="/contact"
-                className="rounded-full bg-[#19130f] px-6 py-3 font-semibold text-[#f6e0a2]"
+                className="rounded-full bg-hira-orange px-6 py-3 font-semibold text-white transition hover:bg-hira-red"
               >
                 Talk to Brand Team
               </Link>
@@ -108,12 +108,14 @@ export default function InsightsPage() {
             <div className="mt-8 grid gap-6 lg:grid-cols-3">
               {articles.map((article) => (
                 <Reveal key={article.title}>
-                  <article className="rounded-[2rem] border border-[#d7c084]/[0.18] bg-[#140f0b] p-8 text-white shadow-soft">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-hira-gold">
+                  <article className="rounded-[2rem] border border-hira-orange/20 bg-hira-wheat/30 p-8 text-hira-ink shadow-soft">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-hira-orange">
                       {article.category}
                     </p>
-                    <h3 className="mt-4 font-display text-3xl">{article.title}</h3>
-                    <p className="mt-4 text-base leading-8 text-white/75">
+                    <h3 className="mt-4 font-display text-3xl text-hira-forest">
+                      {article.title}
+                    </h3>
+                    <p className="mt-4 text-base leading-8 text-hira-ink/75">
                       {article.summary}
                     </p>
                   </article>

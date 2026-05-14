@@ -38,7 +38,7 @@ export default function AboutPage() {
 
       <section className="section-pad pt-8">
         <div className="container-shell">
-          <div className="grid gap-8 rounded-[2.8rem] border border-[#d7c084]/[0.18] bg-[#120e0a] p-8 text-white shadow-soft lg:grid-cols-[0.95fr_1.05fr] lg:p-10">
+          <div className="grid gap-8 rounded-[2.8rem] border border-hira-orange/15 bg-[#F8EBDD] p-8 text-hira-ink shadow-soft lg:grid-cols-[0.95fr_1.05fr] lg:p-10">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-gold">
                 Founder Storyline
@@ -48,7 +48,7 @@ export default function AboutPage() {
                 Poha on the global food map
               </h2>
             </div>
-            <div className="grid gap-4 text-base leading-8 text-white/78">
+            <div className="grid gap-4 text-base leading-8 text-hira-ink/75">
               <p>
                 The emotional core of Hira is not just product expansion. It is
                 a return journey from ambition shaped by global exposure back to

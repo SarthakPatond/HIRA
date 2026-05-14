@@ -50,19 +50,19 @@ export default function HomeHero({ hero, story, categories = [] }) {
         />
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-r from-hira-ink/90 via-hira-ink/70 to-hira-orange/30" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/28 via-black/14 to-black/72" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.14),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.18),transparent_28%)]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-hira-ink/20 via-hira-ink/10 to-hira-orange/18" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/6 to-black/22" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,162,97,0.20),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(217,119,69,0.18),transparent_30%)]" />
 
       <Container className="relative z-10 grid min-h-screen items-center gap-14 py-28 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="max-w-3xl animate-fadeUp text-white">
-          <p className="text-xs font-semibold uppercase tracking-[0.34em] text-hira-wheat">
+        <div className="max-w-3xl animate-fadeUp text-hira-forest">
+          <p className="text-xs font-semibold uppercase tracking-[0.34em] text-hira-forest/70">
             {hero?.eyebrow || "A pantry story from Ujjain"}
           </p>
           <h1 className="mt-6 text-balance font-display text-5xl leading-[0.94] sm:text-6xl lg:text-[5.2rem]">
             {hero?.title || "Some traditions don't change. They evolve."}
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-white/84 sm:text-xl">
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-hira-ink/80 sm:text-xl">
             {hero?.subtitle || "From Ujjain to the world."}
           </p>
           <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row">
@@ -74,7 +74,7 @@ export default function HomeHero({ hero, story, categories = [] }) {
             </HeroAction>
             <HeroAction
               href={hero?.secondary_link}
-              className="rounded-full border border-white/25 bg-white/10 px-7 py-4 text-sm font-semibold text-white transition hover:bg-white/18 sm:text-base"
+              className="rounded-full border border-hira-orange/15 bg-white/65 px-7 py-4 text-sm font-semibold text-hira-forest transition hover:bg-white/85 sm:text-base"
             >
               {hero?.secondary_label || "Become Distributor"}
             </HeroAction>
@@ -91,14 +91,14 @@ export default function HomeHero({ hero, story, categories = [] }) {
                 fallbacks={heroFallbacks}
               />
             </div>
-            <div className="absolute bottom-8 left-8 max-w-sm rounded-[1.75rem] border border-white/18 bg-hira-cream/95 p-6 text-hira-ink shadow-soft backdrop-blur-md">
+            <div className="absolute bottom-8 left-8 max-w-sm rounded-[1.75rem] border border-hira-orange/15 bg-[#FFF8F2]/92 p-6 text-hira-ink shadow-soft backdrop-blur-md">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
                 Brand Note
               </p>
-              <p className="mt-3 font-display text-3xl leading-tight">
+              <p className="mt-3 font-display text-3xl leading-tight text-hira-forest">
                 Emotion first. Product second.
               </p>
-              <p className="mt-3 text-sm leading-7 text-hira-ink/72">
+              <p className="mt-3 text-sm leading-7 text-hira-ink/75">
                 A calmer, more premium storytelling layout that lets the brand
                 breathe before the product details begin.
               </p>
@@ -108,7 +108,7 @@ export default function HomeHero({ hero, story, categories = [] }) {
 
         <a
           href="#home-story"
-          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 text-xs font-semibold uppercase tracking-[0.28em] text-white/75 transition hover:text-white"
+          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 text-xs font-semibold uppercase tracking-[0.28em] text-hira-ink/70 transition hover:text-hira-ink"
         >
           <span>Scroll</span>
           <span className="hero-scroll-line" />

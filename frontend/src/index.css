@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 :root {
-  color: #292524;
-  background: #fff7ed;
+  color: #2D241F; /* Dark Text */
+  background: #FFF9F4; /* Primary Background */
   font-family: "Manrope", sans-serif;
 }
 
@@ -17,11 +17,11 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  color: #292524;
+  color: #2D241F;
   background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.14), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.14), transparent 22%),
-    linear-gradient(180deg, #fff7ed 0%, #fffaf3 44%, #ffffff 100%);
+    radial-gradient(circle at top left, rgba(242, 163, 101, 0.22), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(217, 123, 77, 0.12), transparent 26%),
+    linear-gradient(180deg, #FFF9F4 0%, #FDF1E7 44%, #ffffff 100%);
 }
 
 #root {
@@ -33,7 +33,7 @@ body {
 }
 
 ::selection {
-  background: rgba(249, 115, 22, 0.18);
+  background: rgba(242, 163, 101, 0.28);
 }
 
 .container-shell {
@@ -41,7 +41,7 @@ body {
 }
 
 .glass-panel {
-  @apply rounded-[2rem] border border-hira-orange/10 bg-white/85 backdrop-blur;
+  @apply rounded-[2rem] border border-hira-orange/20 bg-[#FFF9F4]/80 backdrop-blur-md;
 }
 
 .section-pad {
@@ -49,15 +49,15 @@ body {
 }
 
 .surface-card {
-  @apply rounded-[2rem] border border-hira-orange/10 bg-white shadow-soft;
+  @apply rounded-[2rem] border border-hira-orange/20 bg-[#FDF1E7]/75 shadow-soft;
 }
 
 .surface-panel {
-  @apply rounded-[2rem] border border-hira-orange/10 bg-white/85 shadow-soft backdrop-blur;
+  @apply rounded-[2rem] border border-hira-orange/20 bg-[#FFF9F4]/75 shadow-soft backdrop-blur-md;
 }
 
 .touch-input {
-  @apply w-full rounded-2xl border border-hira-orange/15 bg-hira-cream px-5 py-4 text-base text-hira-ink outline-none transition focus:border-hira-orange focus:ring-2 focus:ring-hira-orange/10;
+  @apply w-full rounded-2xl border border-hira-orange/25 bg-[#FFF9F4] px-5 py-4 text-base text-hira-ink outline-none transition focus:border-hira-orange focus:ring-2 focus:ring-hira-orange/20;
 }
 
 .text-balance {
@@ -84,5 +84,9 @@ body {
 .hero-scroll-line {
   width: 1px;
   height: 44px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9));
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(242, 163, 101, 0.85)
+  );
 }
