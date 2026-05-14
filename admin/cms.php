@@ -240,8 +240,20 @@ render_admin_header('CMS Content', 'cms.php');
   <div class="flash error"><?php echo e($error); ?></div>
 <?php endif; ?>
 
-<section class="grid">
-  <article class="form-card">
+<div style="margin: 0 0 18px;">
+  <p class="brand-kicker" style="color: rgba(249, 115, 22, 0.95); margin: 0; text-transform: uppercase; font-size: 12px; letter-spacing: 0.18em;">
+    Dashboard > CMS > <span id="cms-breadcrumb-section">Home</span>
+  </p>
+</div>
+
+<div style="display:flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;">
+  <button type="button" class="btn secondary" data-cms-tab-btn="home" aria-pressed="true">Home</button>
+  <button type="button" class="btn secondary" data-cms-tab-btn="about" aria-pressed="false">About</button>
+  <button type="button" class="btn secondary" data-cms-tab-btn="contact" aria-pressed="false">Contact</button>
+</div>
+
+<section class="grid" id="cms-tab-root">
+  <article class="form-card" data-cms-tab-panel="home">
     <div style="margin-bottom:18px;">
       <p class="brand-kicker" style="color:#f97316;">Homepage Control</p>
       <h3>Hero, story, heritage, product section, coming soon, trust, and CTA</h3>
@@ -474,7 +486,7 @@ render_admin_header('CMS Content', 'cms.php');
     </form>
   </article>
 
-  <article class="form-card">
+  <article class="form-card" data-cms-tab-panel="about" style="display:none;">
     <div style="margin-bottom:18px;">
       <p class="brand-kicker" style="color:#166534;">About Page</p>
       <h3>Story Blocks, Hero Image, and Timeline</h3>
@@ -545,7 +557,7 @@ render_admin_header('CMS Content', 'cms.php');
     </form>
   </article>
 
-  <article class="form-card">
+  <article class="form-card" data-cms-tab-panel="contact" style="display:none;">
     <div style="margin-bottom:18px;">
       <p class="brand-kicker" style="color:#dc2626;">Contact Page</p>
       <h3>Editable Contact Details and Hero Image</h3>
@@ -597,6 +609,57 @@ render_admin_header('CMS Content', 'cms.php');
   </article>
 </section>
 <script>
+  (function () {
+    const root = document.getElementById('cms-tab-root');
+    if (!root) return;
+
+    const panels = {
+      home: root.querySelector('[data-cms-tab-panel="home"]'),
+      about: root.querySelector('[data-cms-tab-panel="about"]'),
+      contact: root.querySelector('[data-cms-tab-panel="contact"]'),
+    };
+
+    const breadcrumb = document.getElementById('cms-breadcrumb-section');
+    const tabButtons = Array.from(document.querySelectorAll('[data-cms-tab-btn]'));
+
+    const labels = { home: 'Home', about: 'About', contact: 'Contact' };
+    const storageKey = 'hira_admin_cms_tab';
+
+    function setActive(tab) {
+      Object.keys(panels).forEach((key) => {
+        if (!panels[key]) return;
+        panels[key].style.display = key === tab ? '' : 'none';
+      });
+
+      tabButtons.forEach((btn) => {
+        const t = btn.getAttribute('data-cms-tab-btn');
+        const isActive = t === tab;
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+
+      if (breadcrumb) breadcrumb.textContent = labels[tab] || 'Home';
+
+      try { localStorage.setItem(storageKey, tab); } catch (e) { /* ignore */ }
+    }
+
+    let initial = 'home';
+    try {
+      initial = localStorage.getItem(storageKey) || 'home';
+    } catch (e) {
+      initial = 'home';
+    }
+    if (!panels[initial]) initial = 'home';
+
+    setActive(initial);
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-cms-tab-btn');
+        if (tab) setActive(tab);
+      });
+    });
+  })();
+
   document.querySelectorAll('[data-preview-target]').forEach((field) => {
     const preview = document.getElementById(field.dataset.previewTarget);
     if (!preview) {
