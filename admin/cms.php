@@ -40,6 +40,12 @@ $home = get_page_content('home');
 $about = get_page_content('about');
 $contact = get_page_content('contact');
 $error = '';
+$allowedCmsTabs = ['home', 'about', 'contact', 'recipes'];
+$activeCmsTab = (string) ($_GET['section'] ?? 'home');
+
+if (!in_array($activeCmsTab, $allowedCmsTabs, true)) {
+    $activeCmsTab = 'home';
+}
 
 // ===== Recipes admin integration (inside CMS Content) =====
 $recipesQueryStatus = 'all';
@@ -49,8 +55,16 @@ $recipesCategories = ['Poha', 'Sabudana', 'Snacks'];
 $recipeEditingId = (int) ($_GET['recipe_id'] ?? ($_POST['recipe_id'] ?? 0));
 $recipeFormError = '';
 
+if ($recipeEditingId > 0) {
+    $activeCmsTab = 'recipes';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $section = (string) ($_POST['section'] ?? '');
+
+    if (in_array($section, $allowedCmsTabs, true)) {
+        $activeCmsTab = $section;
+    }
 
     try {
         // Recipes CRUD handled via POST section=recipes
@@ -457,14 +471,14 @@ render_admin_header('CMS Content', 'cms.php');
   </p>
 </div>
 
-<div style="display:flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;">
-  <button type="button" class="btn secondary" data-cms-tab-btn="home" aria-pressed="true">Home</button>
-  <button type="button" class="btn secondary" data-cms-tab-btn="about" aria-pressed="false">About</button>
-  <button type="button" class="btn secondary" data-cms-tab-btn="contact" aria-pressed="false">Contact</button>
-  <button type="button" class="btn secondary" data-cms-tab-btn="recipes" aria-pressed="false">Recipes</button>
+<div style="display:flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;" data-cms-tab-btn-row>
+  <button type="button" class="btn secondary" data-cms-tab="home" data-cms-tab-btn="home" aria-pressed="false">Home</button>
+  <button type="button" class="btn secondary" data-cms-tab="about" data-cms-tab-btn="about" aria-pressed="false">About</button>
+  <button type="button" class="btn secondary" data-cms-tab="contact" data-cms-tab-btn="contact" aria-pressed="false">Contact</button>
+  <button type="button" class="btn secondary" data-cms-tab="recipes" data-cms-tab-btn="recipes" aria-pressed="false">Recipes</button>
 </div>
 
-<section class="grid" id="cms-tab-root">
+<section class="grid" id="cms-tab-root" data-cms-tab-root data-initial-cms-tab="<?php echo e($activeCmsTab); ?>">
   <article class="form-card" data-cms-tab-panel="home">
     <div style="margin-bottom:18px;">
       <p class="brand-kicker" style="color:#f97316;">Homepage Control</p>
@@ -1122,59 +1136,79 @@ render_admin_header('CMS Content', 'cms.php');
             <div class="actions" style="margin-top:18px;">
               <button type="submit"><?php echo $recipeEditingId > 0 ? 'Update Recipe' : 'Save Recipe'; ?></button>
               <a class="btn secondary" href="/HIRA/admin/cms.php">Cancel</a>
-            </div> 
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </article>
+</section>
 
-            
-
-<?php
-render_admin_footer();
-?>
 <script>
 (() => {
   const root = document.getElementById('cms-tab-root');
   if (!root) return;
 
-  const tabEls = root.querySelectorAll('[data-cms-tab], [data-cms-tab-btn]');
-  const panelEls = root.querySelectorAll('[data-cms-tab-panel]');
+  const tabEls = Array.from(document.querySelectorAll('[data-cms-tab], [data-cms-tab-btn]'));
+  const panelEls = Array.from(root.querySelectorAll('[data-cms-tab-panel]'));
+  const breadcrumb = document.getElementById('cms-breadcrumb-section');
+  const allowedTabs = new Set(panelEls.map((panel) => (panel.getAttribute('data-cms-tab-panel') || '').trim()).filter(Boolean));
 
   const getTabName = (el) => {
     return (el.getAttribute('data-cms-tab') || el.getAttribute('data-cms-tab-btn') || '').trim();
   };
 
-  const clearActive = () => {
-    tabEls.forEach(t => {
-      // keep existing styles; only toggle common active patterns if they exist
-      t.classList.remove('active');
-      t.setAttribute('aria-pressed', 'false');
+  const clearTabs = () => {
+    tabEls.forEach((tab) => {
+      tab.classList.remove('active');
+      tab.classList.add('secondary');
+      tab.setAttribute('aria-pressed', 'false');
     });
-    panelEls.forEach(p => {
-      p.style.display = 'none';
+
+    panelEls.forEach((panel) => {
+      panel.style.display = 'none';
     });
   };
 
-  const showPanelFor = (name) => {
-    const target = root.querySelector('[data-cms-tab-panel="' + CSS.escape(name) + '"]');
-    if (!target) return;
+  const showTab = (name) => {
+    if (!allowedTabs.has(name)) {
+      return;
+    }
 
-    clearActive();
-    // activate the matching tab
-    tabEls.forEach(t => {
-      if (getTabName(t) === name) {
-        t.classList.add('active');
-        t.setAttribute('aria-pressed', 'true');
+    clearTabs();
+
+    tabEls.forEach((tab) => {
+      if (getTabName(tab) === name) {
+        tab.classList.add('active');
+        tab.classList.remove('secondary');
+        tab.setAttribute('aria-pressed', 'true');
       }
     });
-    target.style.display = '';
+
+    panelEls.forEach((panel) => {
+      if ((panel.getAttribute('data-cms-tab-panel') || '').trim() === name) {
+        panel.style.display = '';
+      }
+    });
+
+    if (breadcrumb) {
+      breadcrumb.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+    }
   };
 
-  // Click wiring
-  tabEls.forEach(tab => {
-    tab.addEventListener('click', (e) => {
-      e.preventDefault();
+  tabEls.forEach((tab) => {
+    tab.addEventListener('click', (event) => {
+      event.preventDefault();
       const name = getTabName(tab);
-      if (!name) return;
-      showPanelFor(name);
+      if (name !== '') {
+        showTab(name);
+      }
     });
   });
+
+  showTab(root.getAttribute('data-initial-cms-tab') || 'home');
 })();
 </script>
+<?php
+render_admin_footer();
+?>
