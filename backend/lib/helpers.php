@@ -541,6 +541,421 @@ function seed_default_products(): void
     }
 }
 
+function seed_default_recipes(): void
+{
+    $pdo = get_db();
+    $productRows = $pdo->query('SELECT id, category FROM products ORDER BY created_at ASC, id ASC')->fetchAll();
+
+    if (empty($productRows)) {
+        return;
+    }
+
+    $relatedProductsByGroup = [
+        'poha' => [],
+        'sabudana' => [],
+        'snacks' => [],
+    ];
+
+    foreach ($productRows as $productRow) {
+        $productId = (int) ($productRow['id'] ?? 0);
+        $category = mb_strtolower(trim((string) ($productRow['category'] ?? '')));
+
+        if ($productId <= 0) {
+            continue;
+        }
+
+        if (str_contains($category, 'poha')) {
+            $relatedProductsByGroup['poha'][] = $productId;
+        }
+
+        if (str_contains($category, 'sabudana')) {
+            $relatedProductsByGroup['sabudana'][] = $productId;
+        }
+
+        if (preg_match('/snack|fryum|parmal|namkeen/', $category) === 1) {
+            $relatedProductsByGroup['snacks'][] = $productId;
+        }
+    }
+
+    $fallbackProductIds = array_values(array_filter(
+        array_map(static fn(array $row): int => (int) ($row['id'] ?? 0), $productRows),
+        static fn(int $id): bool => $id > 0
+    ));
+
+    $recipes = [
+        [
+            'name' => 'Kanda Poha',
+            'slug' => 'kanda-poha',
+            'category' => 'Poha',
+            'short_description' => 'Soft poha tossed with onions, curry leaves, peanuts, and a bright squeeze of lemon for a classic breakfast finish.',
+            'hero_image' => 'https://images.unsplash.com/photo-1506368249639-73a05d6f6488?auto=format&fit=crop&w=1200&q=80',
+            'thumbnail_image' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80',
+            'cook_time_minutes' => 18,
+            'servings' => 3,
+            'difficulty' => 'Easy',
+            'tips' => [
+                'Rinse poha quickly so it stays fluffy instead of mushy.',
+                'Finish with sev and fresh coriander just before serving for texture.'
+            ],
+            'ingredients' => [
+                '2 cups HIRA poha',
+                '2 medium onions, thinly sliced',
+                '1/3 cup peanuts',
+                '2 green chillies, chopped',
+                '10 curry leaves',
+                '1/2 tsp mustard seeds',
+                '1/4 tsp turmeric powder',
+                'Salt to taste',
+                '2 tbsp fresh coriander',
+                '1 lemon, cut into wedges'
+            ],
+            'steps' => [
+                'Rinse the poha in a colander, drain well, and let it soften for 5 minutes.',
+                'Heat oil, crackle mustard seeds, then saute peanuts until lightly golden.',
+                'Add onions, green chillies, and curry leaves and cook until the onions turn soft.',
+                'Mix in turmeric and salt, then fold in the softened poha gently until evenly coated.',
+                'Cook for 2 to 3 minutes, finish with coriander and lemon, and serve warm.'
+            ],
+            'related_groups' => ['poha'],
+            'is_featured' => 1,
+            'is_published' => 1,
+        ],
+        [
+            'name' => 'Vegetable Poha',
+            'slug' => 'vegetable-poha',
+            'category' => 'Poha',
+            'short_description' => 'A colorful vegetable poha with peas, carrots, and capsicum that feels hearty while still staying light.',
+            'hero_image' => 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200&q=80',
+            'thumbnail_image' => 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80',
+            'cook_time_minutes' => 22,
+            'servings' => 4,
+            'difficulty' => 'Easy',
+            'tips' => [
+                'Dice vegetables small so they cook quickly without softening the poha too much.',
+                'A spoon of ghee at the end deepens the aroma.'
+            ],
+            'ingredients' => [
+                '2 cups HIRA poha',
+                '1/2 cup green peas',
+                '1/2 cup carrots, finely diced',
+                '1/2 cup capsicum, finely diced',
+                '1 onion, chopped',
+                '1 tomato, chopped',
+                '1/2 tsp mustard seeds',
+                '1/4 tsp turmeric powder',
+                'Salt to taste',
+                '2 tbsp coriander leaves'
+            ],
+            'steps' => [
+                'Wash and drain the poha, then rest it until soft but separate.',
+                'Saute mustard seeds and onions, then add peas, carrots, and capsicum and cook until tender.',
+                'Add tomato, turmeric, and salt and cook until the tomato softens slightly.',
+                'Fold in the poha gently and cook for 2 to 3 minutes on low heat.',
+                'Garnish with coriander and serve immediately.'
+            ],
+            'related_groups' => ['poha'],
+            'is_featured' => 0,
+            'is_published' => 1,
+        ],
+        [
+            'name' => 'Indori Poha',
+            'slug' => 'indori-poha',
+            'category' => 'Poha',
+            'short_description' => 'The Ujjain-and-Indore style favorite with light sweetness, fennel notes, sev, and pomegranate for a layered finish.',
+            'hero_image' => 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1200&q=80',
+            'thumbnail_image' => 'https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format&fit=crop&w=900&q=80',
+            'cook_time_minutes' => 20,
+            'servings' => 3,
+            'difficulty' => 'Medium',
+            'tips' => [
+                'A pinch of sugar balances the gentle spice and gives it the classic Indori tone.',
+                'Add sev only at the end so it stays crisp.'
+            ],
+            'ingredients' => [
+                '2 cups HIRA poha',
+                '1 onion, finely chopped',
+                '2 tbsp fennel seeds',
+                '1/2 tsp mustard seeds',
+                '1/4 tsp turmeric powder',
+                '1 pinch sugar',
+                'Salt to taste',
+                'Fine sev for garnish',
+                'Pomegranate pearls for garnish',
+                'Fresh coriander and lemon'
+            ],
+            'steps' => [
+                'Rinse the poha lightly and let it soften while you prepare the tempering.',
+                'Heat oil, add mustard seeds and fennel seeds, then saute the onions until just translucent.',
+                'Add turmeric, sugar, and salt, then fold in the poha gently to keep it light.',
+                'Cook briefly on low heat, then plate the poha without pressing it down.',
+                'Top with sev, coriander, pomegranate, and a squeeze of lemon before serving.'
+            ],
+            'related_groups' => ['poha'],
+            'is_featured' => 1,
+            'is_published' => 1,
+        ],
+        [
+            'name' => 'Sabudana Khichdi',
+            'slug' => 'sabudana-khichdi',
+            'category' => 'Sabudana',
+            'short_description' => 'Soft sabudana pearls with roasted peanuts, green chillies, and cumin for a fasting-friendly classic that still feels indulgent.',
+            'hero_image' => 'https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=1200&q=80',
+            'thumbnail_image' => 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=900&q=80',
+            'cook_time_minutes' => 25,
+            'servings' => 3,
+            'difficulty' => 'Medium',
+            'tips' => [
+                'Soak sabudana just enough to soften it; oversoaking makes it sticky.',
+                'Use coarsely crushed peanuts for better bite and aroma.'
+            ],
+            'ingredients' => [
+                '2 cups HIRA sabudana, soaked',
+                '1/2 cup roasted peanuts, coarsely crushed',
+                '2 potatoes, diced small',
+                '2 green chillies, chopped',
+                '1 tsp cumin seeds',
+                '1 tbsp ghee',
+                'Salt or fasting salt to taste',
+                '2 tbsp coriander leaves',
+                '1 lemon'
+            ],
+            'steps' => [
+                'Drain the soaked sabudana and mix it with crushed peanuts and salt.',
+                'Heat ghee, add cumin, then saute potatoes until cooked and lightly crisp.',
+                'Add green chillies and toss briefly before adding the sabudana mixture.',
+                'Cook on medium heat, stirring gently until the pearls turn glossy and separate.',
+                'Finish with coriander and lemon and serve hot.'
+            ],
+            'related_groups' => ['sabudana'],
+            'is_featured' => 1,
+            'is_published' => 1,
+        ],
+        [
+            'name' => 'Sabudana Vada',
+            'slug' => 'sabudana-vada',
+            'category' => 'Snacks',
+            'short_description' => 'Golden sabudana fritters with potato and peanut that stay crisp outside and soft inside.',
+            'hero_image' => 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80',
+            'thumbnail_image' => 'https://images.unsplash.com/photo-1505253216365-4e1a97b0f7d0?auto=format&fit=crop&w=900&q=80',
+            'cook_time_minutes' => 30,
+            'servings' => 4,
+            'difficulty' => 'Medium',
+            'tips' => [
+                'Chill the mixture for 10 minutes if the vadas feel too soft to shape.',
+                'Fry on medium heat so the center cooks through without darkening the crust.'
+            ],
+            'ingredients' => [
+                '2 cups HIRA sabudana, soaked',
+                '3 boiled potatoes, mashed',
+                '1/2 cup roasted peanuts, crushed',
+                '2 green chillies, chopped',
+                '2 tbsp coriander leaves',
+                'Salt to taste',
+                'Oil for frying'
+            ],
+            'steps' => [
+                'Combine sabudana, potatoes, peanuts, green chillies, coriander, and salt into a firm mixture.',
+                'Shape the mixture into small flat vadas.',
+                'Heat oil in a kadai and fry the vadas in batches until golden on both sides.',
+                'Drain on paper towels and serve immediately with green chutney or curd.'
+            ],
+            'related_groups' => ['sabudana', 'snacks'],
+            'is_featured' => 0,
+            'is_published' => 1,
+        ],
+        [
+            'name' => 'Poha Cutlet',
+            'slug' => 'poha-cutlet',
+            'category' => 'Snacks',
+            'short_description' => 'Crisp shallow-fried cutlets made with poha, potatoes, and vegetables for tea-time snacking.',
+            'hero_image' => 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80',
+            'thumbnail_image' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80',
+            'cook_time_minutes' => 28,
+            'servings' => 4,
+            'difficulty' => 'Medium',
+            'tips' => [
+                'Rest the cutlets for a few minutes before frying so they hold shape better.',
+                'Toast them on a tawa with a little oil for a lighter finish.'
+            ],
+            'ingredients' => [
+                '1 1/2 cups HIRA poha',
+                '2 boiled potatoes, mashed',
+                '1/4 cup carrots, grated',
+                '1/4 cup peas, boiled',
+                '1 tsp ginger-chilli paste',
+                '1 tsp chaat masala',
+                'Salt to taste',
+                'Breadcrumbs as needed',
+                'Oil for shallow frying'
+            ],
+            'steps' => [
+                'Soften the poha with a quick rinse, then squeeze out excess water.',
+                'Mix poha with potatoes, vegetables, ginger-chilli paste, chaat masala, and salt.',
+                'Shape into oval cutlets and coat lightly with breadcrumbs if needed.',
+                'Shallow fry on a hot tawa until both sides turn crisp and golden.',
+                'Serve hot with ketchup or green chutney.'
+            ],
+            'related_groups' => ['poha', 'snacks'],
+            'is_featured' => 0,
+            'is_published' => 1,
+        ],
+        [
+            'name' => 'Masala Poha',
+            'slug' => 'masala-poha',
+            'category' => 'Poha',
+            'short_description' => 'A spicier, masala-forward poha variation with tomatoes and warming pantry aromatics.',
+            'hero_image' => 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80',
+            'thumbnail_image' => 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=900&q=80',
+            'cook_time_minutes' => 20,
+            'servings' => 3,
+            'difficulty' => 'Easy',
+            'tips' => [
+                'Use a little garam masala at the end instead of the beginning to keep the flavor fresh.',
+                'A touch of tomato ketchup can make it more family-friendly for kids.'
+            ],
+            'ingredients' => [
+                '2 cups HIRA poha',
+                '1 onion, sliced',
+                '1 tomato, chopped',
+                '1 tsp ginger-garlic paste',
+                '1/2 tsp red chilli powder',
+                '1/2 tsp coriander powder',
+                '1/4 tsp garam masala',
+                'Salt to taste',
+                'Coriander for garnish'
+            ],
+            'steps' => [
+                'Rinse and rest the poha until soft and fluffy.',
+                'Saute onions, then add ginger-garlic paste and tomato and cook into a light masala base.',
+                'Add chilli powder, coriander powder, and salt, then fold in the poha gently.',
+                'Cook for 2 minutes, finish with garam masala and coriander, and serve hot.'
+            ],
+            'related_groups' => ['poha'],
+            'is_featured' => 0,
+            'is_published' => 1,
+        ],
+        [
+            'name' => 'Peanut Poha',
+            'slug' => 'peanut-poha',
+            'category' => 'Poha',
+            'short_description' => 'A nutty, texture-rich poha with extra roasted peanuts and gentle spice for an easy weekday plate.',
+            'hero_image' => 'https://images.unsplash.com/photo-1506086679525-a687a3a7f874?auto=format&fit=crop&w=1200&q=80',
+            'thumbnail_image' => 'https://images.unsplash.com/photo-1466637574441-749b8f19452f?auto=format&fit=crop&w=900&q=80',
+            'cook_time_minutes' => 16,
+            'servings' => 2,
+            'difficulty' => 'Easy',
+            'tips' => [
+                'Roast the peanuts separately if you want stronger crunch all the way through.',
+                'A final spoon of fresh coconut makes the peanut flavor feel rounder and softer.'
+            ],
+            'ingredients' => [
+                '2 cups HIRA poha',
+                '1/2 cup peanuts',
+                '1 onion, chopped',
+                '1 green chilli, chopped',
+                '1/2 tsp mustard seeds',
+                '1/4 tsp turmeric powder',
+                'Salt to taste',
+                'Fresh coconut and coriander for garnish'
+            ],
+            'steps' => [
+                'Rinse the poha gently and leave it to soften while you make the tempering.',
+                'Roast or fry the peanuts until crisp and keep aside.',
+                'Saute mustard seeds, onion, and chilli, then add turmeric and salt.',
+                'Fold in the poha and peanuts and cook briefly until warm and fragrant.',
+                'Finish with coconut and coriander before serving.'
+            ],
+            'related_groups' => ['poha'],
+            'is_featured' => 0,
+            'is_published' => 1,
+        ],
+    ];
+
+    $stmtExists = $pdo->prepare('SELECT id FROM recipes WHERE slug = :slug LIMIT 1');
+    $stmtInsertRecipe = $pdo->prepare(
+        'INSERT INTO recipes
+         (name, slug, category, short_description, hero_image, thumbnail_image,
+          cook_time_minutes, servings, difficulty, tips, related_products_json,
+          is_featured, is_published)
+         VALUES
+         (:name, :slug, :category, :short_description, :hero_image, :thumbnail_image,
+          :cook_time_minutes, :servings, :difficulty, :tips, :related_products_json,
+          :is_featured, :is_published)'
+    );
+    $stmtInsertIngredient = $pdo->prepare(
+        'INSERT INTO recipe_ingredients (recipe_id, ingredient_order, ingredient_text)
+         VALUES (:recipe_id, :ingredient_order, :ingredient_text)'
+    );
+    $stmtInsertStep = $pdo->prepare(
+        'INSERT INTO recipe_steps (recipe_id, step_order, step_text)
+         VALUES (:recipe_id, :step_order, :step_text)'
+    );
+
+    foreach ($recipes as $recipe) {
+        $stmtExists->execute(['slug' => $recipe['slug']]);
+        if ($stmtExists->fetch()) {
+            continue;
+        }
+
+        $relatedIds = [];
+        foreach ($recipe['related_groups'] as $group) {
+            $relatedIds = array_merge($relatedIds, $relatedProductsByGroup[$group] ?? []);
+        }
+        $relatedIds = array_values(array_unique(array_filter($relatedIds, static fn(int $id): bool => $id > 0)));
+
+        if (empty($relatedIds)) {
+            $relatedIds = array_slice($fallbackProductIds, 0, 3);
+        }
+
+        try {
+            $pdo->beginTransaction();
+            $stmtInsertRecipe->execute([
+                'name' => $recipe['name'],
+                'slug' => $recipe['slug'],
+                'category' => $recipe['category'],
+                'short_description' => $recipe['short_description'],
+                'hero_image' => $recipe['hero_image'],
+                'thumbnail_image' => $recipe['thumbnail_image'],
+                'cook_time_minutes' => $recipe['cook_time_minutes'],
+                'servings' => $recipe['servings'],
+                'difficulty' => $recipe['difficulty'],
+                'tips' => encode_json_value($recipe['tips']),
+                'related_products_json' => encode_json_value($relatedIds),
+                'is_featured' => $recipe['is_featured'],
+                'is_published' => $recipe['is_published'],
+            ]);
+
+            $recipeId = (int) $pdo->lastInsertId();
+
+            $ingredientOrder = 1;
+            foreach ($recipe['ingredients'] as $ingredientText) {
+                $stmtInsertIngredient->execute([
+                    'recipe_id' => $recipeId,
+                    'ingredient_order' => $ingredientOrder,
+                    'ingredient_text' => $ingredientText,
+                ]);
+                $ingredientOrder++;
+            }
+
+            $stepOrder = 1;
+            foreach ($recipe['steps'] as $stepText) {
+                $stmtInsertStep->execute([
+                    'recipe_id' => $recipeId,
+                    'step_order' => $stepOrder,
+                    'step_text' => $stepText,
+                ]);
+                $stepOrder++;
+            }
+
+            $pdo->commit();
+        } catch (Throwable $exception) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+        }
+    }
+}
+
 function get_page_content(string $page): array
 {
     $pdo = get_db();

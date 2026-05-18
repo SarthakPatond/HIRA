@@ -6,6 +6,7 @@ import ErrorState from "../components/ErrorState";
 import HomeHero from "../components/HomeHero";
 import LoadingState from "../components/LoadingState";
 import ProductCard from "../components/ProductCard";
+import RecipeCard from "../components/RecipeCard";
 import Reveal from "../components/Reveal";
 import Section from "../components/Section";
 import SectionHeading from "../components/SectionHeading";
@@ -105,13 +106,40 @@ export default function HomePage() {
   const { content, loading, error } = usePageContent("home");
   const [products, setProducts] = useState([]);
   const [productError, setProductError] = useState("");
+  const [featuredRecipes, setFeaturedRecipes] = useState([]);
+  const [recipeError, setRecipeError] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
+  const [activeRecipeCategory, setActiveRecipeCategory] = useState("Poha");
 
   useEffect(() => {
     api
       .getProducts({ includeComingSoon: true })
       .then((data) => setProducts(data))
       .catch((err) => setProductError(err.message || "Unable to load products."));
+  }, []);
+
+  useEffect(() => {
+    api
+      .getFeaturedRecipes(6)
+      .then((data) => {
+        const normalized = Array.isArray(data)
+          ? data.map((recipe) => ({
+              id: recipe.id,
+              slug: recipe.slug,
+              name: recipe.name,
+              category: recipe.category,
+              shortDescription: recipe.short_description || "",
+              heroImage: recipe.hero_image || recipe.thumbnail_image || "",
+              image: recipe.thumbnail_image || recipe.hero_image || "",
+              cookingTimeMinutes: recipe.cook_time_minutes ?? 0,
+              difficulty: recipe.difficulty || "Easy",
+              servings: recipe.servings ?? 2
+            }))
+          : [];
+
+        setFeaturedRecipes(normalized);
+      })
+      .catch((err) => setRecipeError(err.message || "Unable to load featured recipes."));
   }, []);
 
   const liveProducts = useMemo(
@@ -165,6 +193,18 @@ export default function HomePage() {
     0,
     3
   );
+
+  const recipeCategoryChips = ["Poha", "Sabudana", "Snacks"];
+  const filteredFeaturedRecipes = useMemo(() => {
+    const filtered = featuredRecipes.filter((recipe) =>
+      activeRecipeCategory ? productMatchesCategory(recipe.category, activeRecipeCategory) : true
+    );
+
+    return filtered.length ? filtered : featuredRecipes;
+  }, [activeRecipeCategory, featuredRecipes]);
+
+  const leadRecipe = filteredFeaturedRecipes[0] || null;
+  const supportingRecipes = filteredFeaturedRecipes.slice(1, 4);
 
   function getCategoryFallbacks(categoryName) {
     const key = normalizeCategory(categoryName);
@@ -417,6 +457,112 @@ export default function HomePage() {
   ))}
 
 </div>
+      </Section>
+
+      <Section className="relative bg-white/70">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
+              Featured Recipes
+            </p>
+            <h2 className="mt-3 font-display text-5xl leading-none text-hira-forest sm:text-6xl">
+              Cook the HIRA pantry beautifully
+            </h2>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-hira-ink/72">
+              {recipeError ||
+                "A curated recipe section with one standout feature and supporting ideas below, built around Poha, Sabudana, and snack-time favorites."}
+            </p>
+          </div>
+          <Link
+            to="/recipes"
+            className="rounded-full border border-hira-orange/20 bg-white px-6 py-3 text-sm font-semibold text-hira-ink transition hover:-translate-y-0.5 hover:border-hira-orange/40 hover:text-hira-orange"
+          >
+            View all recipes
+          </Link>
+        </div>
+
+        <div className="mt-8 hide-scrollbar flex gap-3 overflow-x-auto pb-2">
+          {recipeCategoryChips.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setActiveRecipeCategory(category)}
+              className={`whitespace-nowrap rounded-full px-5 py-3 text-sm font-semibold transition ${
+                activeRecipeCategory === category
+                  ? "bg-hira-orange text-white shadow-soft"
+                  : "border border-hira-orange/10 bg-white text-hira-ink/80 hover:border-hira-orange/30 hover:text-hira-orange"
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
+        {leadRecipe ? (
+          <div className="mt-10 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <Reveal>
+              <article className="group relative overflow-hidden rounded-[2.2rem] border border-hira-orange/12 bg-white shadow-soft">
+                <ContentImage
+                  src={leadRecipe.heroImage || leadRecipe.image}
+                  alt={leadRecipe.name}
+                  className="h-[540px] w-full object-cover transition duration-500 group-hover:scale-105"
+                  fallbacks={[
+                    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80"
+                  ]}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/42 to-transparent" />
+                <div className="absolute inset-x-8 bottom-8 top-8 flex max-w-2xl flex-col justify-end text-white">
+                  <div className="flex flex-wrap gap-3">
+                    <span className="rounded-full bg-white/14 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-hira-wheat backdrop-blur">
+                      {leadRecipe.category}
+                    </span>
+                    <span className="rounded-full bg-white/14 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white backdrop-blur">
+                      {leadRecipe.cookingTimeMinutes} min
+                    </span>
+                    <span className="rounded-full bg-white/14 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white backdrop-blur">
+                      Serves {leadRecipe.servings}
+                    </span>
+                  </div>
+                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.3em] text-hira-wheat">
+                    Featured recipe
+                  </p>
+                  <h3 className="mt-4 font-display text-5xl leading-none sm:text-6xl">
+                    {leadRecipe.name}
+                  </h3>
+                  <p className="mt-5 max-w-xl text-lg leading-8 text-white/84">
+                    {leadRecipe.shortDescription}
+                  </p>
+                  <div className="mt-8 flex flex-wrap gap-4">
+                    <Link
+                      to={`/recipes/${leadRecipe.slug}`}
+                      className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-hira-red transition hover:scale-[1.02]"
+                    >
+                      View full recipe
+                    </Link>
+                    <Link
+                      to="/products"
+                      className="rounded-full border border-white/20 bg-white/10 px-7 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/16"
+                    >
+                      Explore pantry products
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            </Reveal>
+
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
+              {supportingRecipes.map((recipe) => (
+                <Reveal key={recipe.slug}>
+                  <RecipeCard recipe={recipe} />
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-10 rounded-[2rem] border border-dashed border-hira-orange/18 bg-white/85 px-6 py-10 text-center text-hira-ink/70 shadow-soft">
+            Featured recipes will appear here once they are available in CMS.
+          </div>
+        )}
       </Section>
 
       <Section className="bg-hira-cream/70">

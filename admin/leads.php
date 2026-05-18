@@ -21,7 +21,9 @@ render_admin_header('Leads', 'leads.php');
           <th>Name</th>
           <th>Phone</th>
           <th>Business Type</th>
+          <th>Source</th>
           <th>Message</th>
+
           <th>Received</th>
         </tr>
       </thead>
@@ -31,7 +33,9 @@ render_admin_header('Leads', 'leads.php');
             <td><?php echo e($lead['name']); ?></td>
             <td><?php echo e($lead['phone']); ?></td>
             <td><?php echo e($lead['business_type']); ?></td>
+            <td><?php echo e($lead['source'] ?? ''); ?></td>
             <td><?php echo e($lead['message']); ?></td>
+
             <td><?php echo e($lead['created_at']); ?></td>
           </tr>
         <?php endforeach; ?>

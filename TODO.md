@@ -1,25 +1,10 @@
-# Task Progress
+# TODO (Lead + WhatsApp integration)
 
-## A) Palette Refinement (Premium FMCG Soft + Clean)
-
-## Plan Steps
-- [ ] 1. Update Tailwind tokens (`frontend/tailwind.config.js`) ✅/token mapping + shadow softness
-- [ ] 2. Update global styling (`frontend/src/index.css`) ✅/backgrounds, borders, glass/surfaces, selection
-- [ ] 3. Refine color usage ONLY in:
-  - [ ] 3a. `frontend/src/components/HomeHero.jsx`
-  - [ ] 3b. `frontend/src/pages/AboutPage.jsx`
-  - [ ] 3c. `frontend/src/pages/ComingSoonPage.jsx`
-- [ ] 4. Quick build/test (no backend/CMS/API changes)
-- [ ] 5. Complete task
-
----
-
-## B) Task Progress: Hide Featured Category without /uploads/ image
-## Plan Steps
-- [x] 1. Understand files & create edit plan ✅
-- [x] 2. Create TODO.md with steps ✅
-- [x] 3. Edit HomePage.jsx condition ✅
-- [ ] 4. Test: verify hidden when no /uploads/ image  
-- [ ] 5. Verify grid auto-adjusts (2 product cards shown)
-- [ ] 6. Complete task
+- [ ] Add DB columns for backward-compatible lead metadata (source, city, business_details)
+- [ ] Update backend submitContact.php to save Contact source + new fields (nulls)
+- [ ] Update backend submitLead.php to save Distributor source + city + business_details mapping (without breaking old columns)
+- [ ] Update admin/leads.php to display Source (and optionally city/business details columns safely)
+- [ ] Update ContactPage.jsx: after successful save, open WhatsApp in new tab with prefills (Name, Phone, Message)
+- [ ] Update DistributorPage.jsx: add City input + rename textarea label to Business Details; after save, open WhatsApp with prefills (Name, Phone, City, Business Details)
+- [ ] Smoke test: submit both forms, verify Admin Leads shows new rows, then WhatsApp opens only after success
 

@@ -10,7 +10,9 @@ import { api } from "../lib/api";
 const initialState = {
   name: "",
   phone: "",
-  business_type: "",
+  city: "",
+  business_details: "",
+  business_type: "Distributor" ,
   message: ""
 };
 
@@ -25,18 +27,40 @@ export default function DistributorPage() {
   const description =
     "Use Hira FMCG's B2B portal for distributor, stockist, wholesaler, and repacking partner inquiries.";
 
+  function buildWhatsAppUrl(message) {
+    const YOURNUMBER = "919575212055";
+    const url = `https://wa.me/${YOURNUMBER}?text=${encodeURIComponent(message)}`;
+    return url;
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setStatus({ loading: true, message: "", error: "" });
 
     try {
-      await api.submitLead(form);
+      const submitted = { ...form };
+
+      // Backend expects: name, phone, business_type, city, business_details, message
+      const payload = {
+        name: submitted.name,
+        phone: submitted.phone,
+        business_type: submitted.business_type,
+        city: submitted.city,
+        business_details: submitted.business_details,
+        message: submitted.business_details
+      };
+
+      await api.submitLead(payload);
       setForm(initialState);
       setStatus({
         loading: false,
         message: "Your distributor inquiry has been sent.",
         error: ""
       });
+
+      const whatsappMessage = `New distributor enquiry\nName: ${submitted.name}\nPhone: ${submitted.phone}\nCity: ${submitted.city}\nBusiness Details: ${submitted.business_details}`;
+      const url = buildWhatsAppUrl(whatsappMessage);
+      window.open(url, "_blank", "noopener,noreferrer");
     } catch (submitError) {
       setStatus({
         loading: false,
@@ -67,80 +91,82 @@ export default function DistributorPage() {
       />
 
       <Section containerClassName="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[2rem] bg-hira-forest p-8 text-white shadow-soft sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-wheat">
-              Why Partner
-            </p>
-            <h2 className="mt-4 font-display text-4xl">
-              A dedicated B2B portal for stockists, wholesalers, and repacking partners.
-            </h2>
-            <ul className="mt-8 grid gap-4 text-sm leading-7 text-white/80">
-              <li>Dependable staple categories with household familiarity.</li>
-              <li>Brand storytelling that improves shelf recall and trust.</li>
-              <li>Room to scale into launch calendars and future categories.</li>
-              <li>Direct lead capture into the admin dashboard for quick follow-up.</li>
-              <li>Structured wholesale inquiry flow instead of a generic contact form.</li>
-            </ul>
-          </div>
+        <div className="rounded-[2rem] bg-hira-forest p-8 text-white shadow-soft sm:p-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-wheat">
+            Why Partner
+          </p>
+          <h2 className="mt-4 font-display text-4xl">
+            A dedicated B2B portal for stockists, wholesalers, and repacking partners.
+          </h2>
+          <ul className="mt-8 grid gap-4 text-sm leading-7 text-white/80">
+            <li>Dependable staple categories with household familiarity.</li>
+            <li>Brand storytelling that improves shelf recall and trust.</li>
+            <li>Room to scale into launch calendars and future categories.</li>
+            <li>Direct lead capture into the admin dashboard for quick follow-up.</li>
+            <li>Structured wholesale inquiry flow instead of a generic contact form.</li>
+          </ul>
+        </div>
 
-          <div className="rounded-[2rem] border border-hira-orange/10 bg-white p-8 shadow-soft sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
-              Inquiry Form
-            </p>
-            <h2 className="mt-4 font-display text-4xl text-hira-forest">
-              Become a distributor
-            </h2>
-            <form className="mt-8 grid gap-5" onSubmit={handleSubmit}>
-              <input
-                className="touch-input"
-                placeholder="Name"
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-                required
-              />
-              <input
-                className="touch-input"
-                placeholder="Phone"
-                value={form.phone}
-                onChange={(event) => setForm({ ...form, phone: event.target.value })}
-                required
-              />
-              <input
-                className="touch-input"
-                placeholder="Business Type"
-                value={form.business_type}
-                onChange={(event) =>
-                  setForm({ ...form, business_type: event.target.value })
-                }
-                required
-              />
-              <textarea
-                className="touch-input min-h-[180px]"
-                placeholder="Tell us about your market, distribution reach, or retail interest."
-                value={form.message}
-                onChange={(event) => setForm({ ...form, message: event.target.value })}
-                required
-              />
-              <button
-                type="submit"
-                disabled={status.loading}
-                className="rounded-full bg-hira-orange px-6 py-4 font-semibold text-white transition hover:bg-hira-red disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {status.loading ? "Submitting..." : "Submit Inquiry"}
-              </button>
-              {status.message ? (
-                <p className="rounded-2xl bg-hira-green/10 px-4 py-3 text-sm text-hira-green">
-                  {status.message}
-                </p>
-              ) : null}
-              {status.error ? (
-                <p className="rounded-2xl bg-hira-red/10 px-4 py-3 text-sm text-hira-red">
-                  {status.error}
-                </p>
-              ) : null}
-            </form>
-          </div>
+        <div className="rounded-[2rem] border border-hira-orange/10 bg-white p-8 shadow-soft sm:p-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
+            Inquiry Form
+          </p>
+          <h2 className="mt-4 font-display text-4xl text-hira-forest">Become a distributor</h2>
+
+          <form className="mt-8 grid gap-5" onSubmit={handleSubmit}>
+            <input
+              className="touch-input"
+              placeholder="Name"
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              required
+            />
+            <input
+              className="touch-input"
+              placeholder="Phone"
+              value={form.phone}
+              onChange={(event) => setForm({ ...form, phone: event.target.value })}
+              required
+            />
+
+            <input
+              className="touch-input"
+              placeholder="City"
+              value={form.city}
+              onChange={(event) => setForm({ ...form, city: event.target.value })}
+              required
+            />
+
+            <textarea
+              className="touch-input min-h-[180px]"
+              placeholder="Tell us about your market, distribution reach, or retail interest."
+              value={form.business_details}
+              onChange={(event) => setForm({ ...form, business_details: event.target.value })}
+              required
+            />
+
+            <button
+              type="submit"
+              disabled={status.loading}
+              className="rounded-full bg-hira-orange px-6 py-4 font-semibold text-white transition hover:bg-hira-red disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {status.loading ? "Submitting..." : "Submit Inquiry"}
+            </button>
+
+            {status.message ? (
+              <p className="rounded-2xl bg-hira-green/10 px-4 py-3 text-sm text-hira-green">
+                {status.message}
+              </p>
+            ) : null}
+            {status.error ? (
+              <p className="rounded-2xl bg-hira-red/10 px-4 py-3 text-sm text-hira-red">
+                {status.error}
+              </p>
+            ) : null}
+          </form>
+        </div>
       </Section>
     </div>
   );
 }
+

@@ -19,14 +19,18 @@ try {
     }
 
     $stmt = get_db()->prepare(
-        'INSERT INTO leads (name, phone, business_type, message)
-         VALUES (:name, :phone, :business_type, :message)'
+        'INSERT INTO leads (name, phone, business_type, message, source, city, business_details)
+         VALUES (:name, :phone, :business_type, :message, :source, :city, :business_details)'
     );
+
     $stmt->execute([
         'name' => $name,
         'phone' => $phone,
         'business_type' => 'General Inquiry',
         'message' => $message,
+        'source' => 'Contact',
+        'city' => null,
+        'business_details' => null,
     ]);
 
     json_response([
@@ -39,3 +43,4 @@ try {
         'message' => $exception->getMessage(),
     ], 500);
 }
+

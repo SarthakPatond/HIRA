@@ -5,6 +5,7 @@ import Container from "./Container";
 const links = [
   { to: "/", label: "Home" },
   { to: "/products", label: "Products" },
+  { to: "/recipes", label: "Recipes" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" }
 ];

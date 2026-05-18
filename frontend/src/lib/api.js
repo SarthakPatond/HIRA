@@ -21,6 +21,22 @@ export const api = {
       }`
     ),
   getProduct: (id) => request(`/getProduct.php?id=${id}`),
+
+  // Recipes
+  getFeaturedRecipes: (limit = 4) =>
+    request(`/getFeaturedRecipes.php?limit=${encodeURIComponent(String(limit || 4))}`),
+  getRecipes: ({ category = "", status = "published" } = {}) => {
+    const params = new URLSearchParams();
+    if (category) params.set("category", category);
+    if (status) params.set("status", status);
+    const qs = params.toString();
+    return request(`/getRecipes.php${qs ? `?${qs}` : ""}`);
+  },
+  getRecipeDetailsBySlug: (slug) =>
+    request(
+      `/getRecipeDetailsBySlug.php?slug=${encodeURIComponent(String(slug || "").trim())}`
+    ),
+
   submitLead: (payload) =>
     request("/submitLead.php", {
       method: "POST",
