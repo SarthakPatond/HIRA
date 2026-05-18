@@ -36,6 +36,20 @@ function resolve_media_input(?string $currentValue, string $urlKey, string $file
     return $nextValue;
 }
 
+function normalize_related_product_ids(mixed $value): array
+{
+    if (is_array($value)) {
+        $rawValues = $value;
+    } else {
+        $rawValues = preg_split('/[\s,]+/', trim((string) $value)) ?: [];
+    }
+
+    $ids = array_map(static fn(mixed $item): int => (int) $item, $rawValues);
+    $ids = array_filter($ids, static fn(int $id): bool => $id > 0);
+
+    return array_values(array_unique($ids));
+}
+
 $home = get_page_content('home');
 $about = get_page_content('about');
 $contact = get_page_content('contact');
@@ -54,6 +68,7 @@ $recipes = [];
 $recipesCategories = ['Poha', 'Sabudana', 'Snacks'];
 $recipeEditingId = (int) ($_GET['recipe_id'] ?? ($_POST['recipe_id'] ?? 0));
 $recipeFormError = '';
+$lastPostedSection = '';
 
 if ($recipeEditingId > 0) {
     $activeCmsTab = 'recipes';
@@ -61,6 +76,7 @@ if ($recipeEditingId > 0) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $section = (string) ($_POST['section'] ?? '');
+    $lastPostedSection = $section;
 
     if (in_array($section, $allowedCmsTabs, true)) {
         $activeCmsTab = $section;
@@ -84,12 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $is_featured = (int) (($_POST['r_is_featured'] ?? '0') === '1');
 
             // related products (optional)
-            $related_products_json = null;
-            $relatedProducts = $_POST['r_related_products'] ?? [];
-            if (is_array($relatedProducts)) {
-                $ids = array_values(array_filter(array_map(static fn($v) => (int) $v, $relatedProducts), static fn($x) => $x > 0));
-                $related_products_json = !empty($ids) ? encode_json_value($ids) : null;
-            }
+            $relatedProductIds = normalize_related_product_ids($_POST['r_related_products'] ?? []);
+            $related_products_json = !empty($relatedProductIds) ? encode_json_value($relatedProductIds) : null;
 
             // tips (one per line => JSON array)
             $tipsLines = normalize_multiline_list((string) ($_POST['r_tips'] ?? ''));
@@ -242,7 +254,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             set_flash('success', $editing ? 'Recipe updated successfully.' : 'Recipe added successfully.');
-            redirect('/HIRA/admin/cms.php');
+            redirect('/HIRA/admin/cms.php?section=recipes');
         }
 
         // Bulk actions: delete recipe
@@ -250,12 +262,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = (int) ($_POST['recipe_id'] ?? 0);
             if ($id > 0) {
                 $pdo = get_db();
+                $stmtRecipe = $pdo->prepare('SELECT hero_image, thumbnail_image FROM recipes WHERE id = :id LIMIT 1');
+                $stmtRecipe->execute(['id' => $id]);
+                $recipeToDelete = $stmtRecipe->fetch();
+
+                $pdo->beginTransaction();
                 $pdo->prepare('DELETE FROM recipe_ingredients WHERE recipe_id=:id')->execute(['id' => $id]);
                 $pdo->prepare('DELETE FROM recipe_steps WHERE recipe_id=:id')->execute(['id' => $id]);
                 $pdo->prepare('DELETE FROM recipes WHERE id=:id')->execute(['id' => $id]);
+                $pdo->commit();
+
+                if ($recipeToDelete) {
+                    delete_local_upload($recipeToDelete['hero_image'] ?? null);
+                    delete_local_upload($recipeToDelete['thumbnail_image'] ?? null);
+                }
             }
             set_flash('success', 'Recipe deleted successfully.');
-            redirect('/HIRA/admin/cms.php');
+            redirect('/HIRA/admin/cms.php?section=recipes');
         }
 
         // toggle publish/featured
@@ -267,7 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 get_db()->prepare("UPDATE recipes SET {$field}=:v WHERE id=:id")->execute(['v' => $value ? 1 : 0, 'id' => $id]);
                 set_flash('success', 'Recipe updated.');
             }
-            redirect('/HIRA/admin/cms.php');
+            redirect('/HIRA/admin/cms.php?section=recipes');
         }
 
         if ($section === 'home') {
@@ -451,7 +474,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('/HIRA/admin/cms.php');
         }
     } catch (Throwable $exception) {
-        $error = $exception->getMessage();
+        if (str_starts_with($section, 'recipes')) {
+            $recipeFormError = $exception->getMessage();
+            $activeCmsTab = 'recipes';
+        } else {
+            $error = $exception->getMessage();
+        }
     }
 }
 
@@ -851,10 +879,18 @@ render_admin_header('CMS Content', 'cms.php');
           $recipeListError = $e->getMessage();
       }
 
+      $productOptions = fetch_products(true);
+      $recipesCategories = array_values(array_unique(array_merge(
+          $recipesCategories,
+          array_values(array_filter(array_map(static fn(array $row): string => trim((string) ($row['category'] ?? '')), $recipeListRows)))
+      )));
+      sort($recipesCategories);
+
       // If editing via query param, load current recipe fields + ingredients/steps
       $editingRecipe = null;
       $editingIngredients = [];
       $editingSteps = [];
+      $selectedRelatedProductIds = [];
 
       if ($recipeEditingId > 0) {
           $stmtEdit = get_db()->prepare('SELECT * FROM recipes WHERE id = :id LIMIT 1');
@@ -871,6 +907,9 @@ render_admin_header('CMS Content', 'cms.php');
               $stmtSteps->execute(['id' => $recipeEditingId]);
               $rowsSteps = $stmtSteps->fetchAll();
               $editingSteps = array_map(static fn(array $r): string => (string)$r['step_text'], $rowsSteps);
+
+              $selectedRelatedProductIds = decode_json_array((string) ($editingRecipe['related_products_json'] ?? ''));
+              $selectedRelatedProductIds = array_values(array_filter(array_map(static fn($value): int => (int) $value, $selectedRelatedProductIds), static fn(int $id): bool => $id > 0));
           }
       }
 
@@ -887,6 +926,7 @@ render_admin_header('CMS Content', 'cms.php');
         'is_published' => !empty($editingRecipe['is_published']) ? '1' : '0',
         'is_featured' => !empty($editingRecipe['is_featured']) ? '1' : '0',
         'tips' => '',
+        'related_products' => $selectedRelatedProductIds,
       ];
       $tipsDecoded = decode_json_array((string)($editingRecipe['tips'] ?? ''));
       if (!empty($tipsDecoded) && is_array($tipsDecoded)) {
@@ -894,6 +934,26 @@ render_admin_header('CMS Content', 'cms.php');
       } else {
         $tipsText = trim((string)($editingRecipe['tips'] ?? ''));
         $formVals['tips'] = $tipsText;
+      }
+
+      if ($lastPostedSection === 'recipes' && $recipeFormError !== '') {
+        $formVals = [
+          'name' => trim((string) ($_POST['r_name'] ?? '')),
+          'slug' => trim((string) ($_POST['r_slug'] ?? '')),
+          'category' => trim((string) ($_POST['r_category'] ?? '')),
+          'short_description' => trim((string) ($_POST['r_short_description'] ?? '')),
+          'cook_time_minutes' => trim((string) ($_POST['r_cook_time_minutes'] ?? '')),
+          'servings' => trim((string) ($_POST['r_servings'] ?? '')),
+          'difficulty' => trim((string) ($_POST['r_difficulty'] ?? 'Easy')),
+          'hero_image_url' => trim((string) ($_POST['r_hero_image_url'] ?? '')),
+          'thumbnail_image_url' => trim((string) ($_POST['r_thumbnail_image_url'] ?? '')),
+          'is_published' => (string) ($_POST['r_is_published'] ?? '0'),
+          'is_featured' => (string) ($_POST['r_is_featured'] ?? '0'),
+          'tips' => (string) ($_POST['r_tips'] ?? ''),
+          'related_products' => normalize_related_product_ids($_POST['r_related_products'] ?? []),
+        ];
+        $editingIngredients = is_array($_POST['r_ingredients'] ?? null) ? array_values($_POST['r_ingredients']) : [];
+        $editingSteps = is_array($_POST['r_steps'] ?? null) ? array_values($_POST['r_steps']) : [];
       }
     ?>
 
@@ -908,6 +968,7 @@ render_admin_header('CMS Content', 'cms.php');
       <div class="table-card">
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
           <form method="get" style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
+            <input type="hidden" name="section" value="recipes">
             <input type="hidden" name="recipe_id" value="<?php echo (int)$recipeEditingId; ?>">
             <div class="field" style="margin:0; flex:1;">
               <label style="display:block;">Search</label>
@@ -1092,8 +1153,16 @@ render_admin_header('CMS Content', 'cms.php');
             </div>
 
             <div class="field full">
-              <label>Related Products (optional - product IDs, comma separated)</label>
-              <input type="text" name="r_related_products" placeholder="e.g. 3,7,9" value="<?php echo e((string)($_GET['rel'] ?? '')); ?>">
+              <label>Related Products (optional)</label>
+              <select name="r_related_products[]" multiple size="<?php echo max(4, min(8, count($productOptions))); ?>">
+                <?php foreach ($productOptions as $product): ?>
+                  <?php $productId = (int) ($product['id'] ?? 0); ?>
+                  <option value="<?php echo $productId; ?>" <?php echo in_array($productId, $formVals['related_products'], true) ? 'selected' : ''; ?>>
+                    <?php echo e((string) ($product['name'] ?? 'Product')); ?><?php echo !empty($product['category']) ? ' (' . e((string) $product['category']) . ')' : ''; ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+              <p class="hint">Hold Ctrl (Windows) or Command (Mac) to select multiple products.</p>
             </div>
 
             <div style="margin-top:18px;">
@@ -1135,7 +1204,7 @@ render_admin_header('CMS Content', 'cms.php');
 
             <div class="actions" style="margin-top:18px;">
               <button type="submit"><?php echo $recipeEditingId > 0 ? 'Update Recipe' : 'Save Recipe'; ?></button>
-              <a class="btn secondary" href="/HIRA/admin/cms.php">Cancel</a>
+              <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">Cancel</a>
             </div>
           </div>
         </form>
@@ -1207,6 +1276,112 @@ render_admin_header('CMS Content', 'cms.php');
   });
 
   showTab(root.getAttribute('data-initial-cms-tab') || 'home');
+
+  const bindPreview = (input) => {
+    const targetId = (input.getAttribute('data-preview-target') || '').trim();
+    if (targetId === '') {
+      return;
+    }
+
+    const preview = document.getElementById(targetId);
+    if (!preview) {
+      return;
+    }
+
+    if (input.type === 'file') {
+      input.addEventListener('change', (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (loadEvent) => {
+          if (typeof loadEvent.target?.result === 'string') {
+            preview.src = loadEvent.target.result;
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+
+      return;
+    }
+
+    input.addEventListener('input', (event) => {
+      const value = event.target.value.trim();
+      if (value !== '') {
+        preview.src = value;
+      }
+    });
+  };
+
+  document.querySelectorAll('[data-preview-target]').forEach(bindPreview);
+
+  const buildDynamicRow = (type, name, placeholder) => {
+    const row = document.createElement('div');
+    row.className = 'dynamic-row';
+
+    if (type === 'textarea') {
+      const textarea = document.createElement('textarea');
+      textarea.name = name;
+      textarea.rows = 3;
+      textarea.placeholder = placeholder;
+      textarea.required = true;
+      row.appendChild(textarea);
+    } else {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = name;
+      input.placeholder = placeholder;
+      input.required = true;
+      row.appendChild(input);
+    }
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'danger';
+    button.textContent = 'Remove';
+    button.addEventListener('click', () => window.removeDynamicRow(button));
+    row.appendChild(button);
+
+    return row;
+  };
+
+  window.removeDynamicRow = (button) => {
+    const row = button.closest('.dynamic-row');
+    const container = row?.parentElement;
+    if (!row || !container) {
+      return;
+    }
+
+    if (container.children.length === 1) {
+      const field = row.querySelector('input, textarea');
+      if (field) {
+        field.value = '';
+      }
+      return;
+    }
+
+    row.remove();
+  };
+
+  window.addIngredientRow = (containerId = 'r-ingredients-container') => {
+    const container = document.getElementById(containerId);
+    if (!container) {
+      return;
+    }
+
+    container.appendChild(buildDynamicRow('input', 'r_ingredients[]', 'Ingredient'));
+  };
+
+  window.addStepRow = (containerId = 'r-steps-container') => {
+    const container = document.getElementById(containerId);
+    if (!container) {
+      return;
+    }
+
+    container.appendChild(buildDynamicRow('textarea', 'r_steps[]', 'Step'));
+  };
 })();
 </script>
 <?php
