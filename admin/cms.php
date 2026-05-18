@@ -50,6 +50,17 @@ function normalize_related_product_ids(mixed $value): array
     return array_values(array_unique($ids));
 }
 
+function recipe_preview_url(string $slug): string
+{
+    $frontendBase = trim((string) getenv('HIRA_FRONTEND_URL'));
+
+    if ($frontendBase === '') {
+        $frontendBase = 'http://localhost:5173';
+    }
+
+    return rtrim($frontendBase, '/') . '/recipes/' . rawurlencode($slug);
+}
+
 $home = get_page_content('home');
 $about = get_page_content('about');
 $contact = get_page_content('contact');
@@ -291,6 +302,114 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 set_flash('success', 'Recipe updated.');
             }
             redirect('/HIRA/admin/cms.php?section=recipes');
+        }
+
+        if ($section === 'recipes_duplicate') {
+            $id = (int) ($_POST['recipe_id'] ?? 0);
+
+            if ($id <= 0) {
+                throw new RuntimeException('Recipe not found.');
+            }
+
+            $pdo = get_db();
+            $stmtRecipe = $pdo->prepare('SELECT * FROM recipes WHERE id = :id LIMIT 1');
+            $stmtRecipe->execute(['id' => $id]);
+            $sourceRecipe = $stmtRecipe->fetch();
+
+            if (!$sourceRecipe) {
+                throw new RuntimeException('Recipe not found.');
+            }
+
+            $stmtIngredients = $pdo->prepare(
+                'SELECT ingredient_text FROM recipe_ingredients WHERE recipe_id = :recipe_id ORDER BY ingredient_order ASC, id ASC'
+            );
+            $stmtIngredients->execute(['recipe_id' => $id]);
+            $sourceIngredients = $stmtIngredients->fetchAll();
+
+            $stmtSteps = $pdo->prepare(
+                'SELECT step_text FROM recipe_steps WHERE recipe_id = :recipe_id ORDER BY step_order ASC, id ASC'
+            );
+            $stmtSteps->execute(['recipe_id' => $id]);
+            $sourceSteps = $stmtSteps->fetchAll();
+
+            $baseName = trim((string) ($sourceRecipe['name'] ?? 'Recipe')) . ' Copy';
+            $baseSlug = trim((string) ($sourceRecipe['slug'] ?? 'recipe')) . '-copy';
+            $newSlug = $baseSlug;
+            $suffix = 2;
+
+            while (true) {
+                $stmtDup = $pdo->prepare('SELECT id FROM recipes WHERE slug = :slug LIMIT 1');
+                $stmtDup->execute(['slug' => $newSlug]);
+                if (!$stmtDup->fetch()) {
+                    break;
+                }
+
+                $newSlug = $baseSlug . '-' . $suffix;
+                $suffix++;
+            }
+
+            $pdo->beginTransaction();
+
+            $stmtInsert = $pdo->prepare(
+                'INSERT INTO recipes
+                 (name, slug, category, short_description, hero_image, thumbnail_image,
+                  cook_time_minutes, servings, difficulty, tips, related_products_json,
+                  is_featured, is_published)
+                 VALUES
+                 (:name, :slug, :category, :short_description, :hero_image, :thumbnail_image,
+                  :cook_time_minutes, :servings, :difficulty, :tips, :related_products_json,
+                  :is_featured, :is_published)'
+            );
+            $stmtInsert->execute([
+                'name' => $baseName,
+                'slug' => $newSlug,
+                'category' => (string) ($sourceRecipe['category'] ?? ''),
+                'short_description' => (string) ($sourceRecipe['short_description'] ?? ''),
+                'hero_image' => $sourceRecipe['hero_image'] ?? null,
+                'thumbnail_image' => $sourceRecipe['thumbnail_image'] ?? null,
+                'cook_time_minutes' => (int) ($sourceRecipe['cook_time_minutes'] ?? 0),
+                'servings' => (int) ($sourceRecipe['servings'] ?? 0),
+                'difficulty' => (string) ($sourceRecipe['difficulty'] ?? 'Easy'),
+                'tips' => $sourceRecipe['tips'] ?? null,
+                'related_products_json' => $sourceRecipe['related_products_json'] ?? null,
+                'is_featured' => 0,
+                'is_published' => 0,
+            ]);
+
+            $newRecipeId = (int) $pdo->lastInsertId();
+
+            $stmtInsertIngredient = $pdo->prepare(
+                'INSERT INTO recipe_ingredients (recipe_id, ingredient_order, ingredient_text)
+                 VALUES (:recipe_id, :ingredient_order, :ingredient_text)'
+            );
+            $ingredientOrder = 1;
+            foreach ($sourceIngredients as $ingredientRow) {
+                $stmtInsertIngredient->execute([
+                    'recipe_id' => $newRecipeId,
+                    'ingredient_order' => $ingredientOrder,
+                    'ingredient_text' => (string) ($ingredientRow['ingredient_text'] ?? ''),
+                ]);
+                $ingredientOrder++;
+            }
+
+            $stmtInsertStep = $pdo->prepare(
+                'INSERT INTO recipe_steps (recipe_id, step_order, step_text)
+                 VALUES (:recipe_id, :step_order, :step_text)'
+            );
+            $stepOrder = 1;
+            foreach ($sourceSteps as $stepRow) {
+                $stmtInsertStep->execute([
+                    'recipe_id' => $newRecipeId,
+                    'step_order' => $stepOrder,
+                    'step_text' => (string) ($stepRow['step_text'] ?? ''),
+                ]);
+                $stepOrder++;
+            }
+
+            $pdo->commit();
+
+            set_flash('success', 'Recipe duplicated as a draft copy.');
+            redirect('/HIRA/admin/cms.php?section=recipes&recipe_id=' . $newRecipeId);
         }
 
         if ($section === 'home') {
@@ -864,7 +983,7 @@ render_admin_header('CMS Content', 'cms.php');
   <article class="form-card" data-cms-tab-panel="recipes" style="display:none;">
     <div style="margin-bottom:18px;">
       <p class="brand-kicker" style="color:#f97316;">Recipes Management</p>
-      <h3>Recipes (CRUD) in CMS</h3>
+      <h3>Client-friendly Recipes workflow inside CMS Content</h3>
     </div>
 
     <?php
@@ -955,6 +1074,63 @@ render_admin_header('CMS Content', 'cms.php');
         $editingIngredients = is_array($_POST['r_ingredients'] ?? null) ? array_values($_POST['r_ingredients']) : [];
         $editingSteps = is_array($_POST['r_steps'] ?? null) ? array_values($_POST['r_steps']) : [];
       }
+
+      $q = trim((string) ($_GET['q'] ?? ''));
+      $catFilter = trim((string) ($_GET['cat'] ?? ''));
+      $statusFilter = trim((string) ($_GET['status'] ?? 'all'));
+      $featuredFilter = trim((string) ($_GET['featured'] ?? 'all'));
+      if (!in_array($statusFilter, ['all', 'published', 'draft'], true)) {
+          $statusFilter = 'all';
+      }
+      if (!in_array($featuredFilter, ['all', 'featured', 'standard'], true)) {
+          $featuredFilter = 'all';
+      }
+
+      $rows = $recipeListRows ?? [];
+      $recipeStats = [
+          'total' => count($rows),
+          'published' => count(array_filter($rows, static fn(array $row): bool => !empty($row['is_published']))),
+          'featured' => count(array_filter($rows, static fn(array $row): bool => !empty($row['is_featured']))),
+          'draft' => count(array_filter($rows, static fn(array $row): bool => empty($row['is_published']))),
+      ];
+
+      $filtered = array_values(array_filter($rows, static function (array $row) use ($q, $catFilter, $statusFilter, $featuredFilter): bool {
+          if ($catFilter !== '' && (string) ($row['category'] ?? '') !== $catFilter) {
+              return false;
+          }
+
+          if ($statusFilter === 'published' && empty($row['is_published'])) {
+              return false;
+          }
+
+          if ($statusFilter === 'draft' && !empty($row['is_published'])) {
+              return false;
+          }
+
+          if ($featuredFilter === 'featured' && empty($row['is_featured'])) {
+              return false;
+          }
+
+          if ($featuredFilter === 'standard' && !empty($row['is_featured'])) {
+              return false;
+          }
+
+          if ($q === '') {
+              return true;
+          }
+
+          $haystack = mb_strtolower(
+              trim((string) ($row['name'] ?? '') . ' ' . (string) ($row['slug'] ?? '') . ' ' . (string) ($row['category'] ?? ''))
+          );
+
+          return mb_strpos($haystack, mb_strtolower($q)) !== false;
+      }));
+
+      $heroPreviewValue = $formVals['hero_image_url'] !== '' ? $formVals['hero_image_url'] : (string) ($editingRecipe['hero_image'] ?? '');
+      $thumbnailPreviewValue = $formVals['thumbnail_image_url'] !== '' ? $formVals['thumbnail_image_url'] : (string) ($editingRecipe['thumbnail_image'] ?? '');
+      $recipeIngredientsToRender = !empty($editingIngredients) ? $editingIngredients : [''];
+      $recipeStepsToRender = !empty($editingSteps) ? $editingSteps : [''];
+      $previewLink = $formVals['slug'] !== '' ? recipe_preview_url($formVals['slug']) : '';
     ?>
 
     <?php if ($recipeFormError !== '' ): ?>
@@ -965,216 +1141,342 @@ render_admin_header('CMS Content', 'cms.php');
     <?php endif; ?>
 
     <div style="display:grid; gap:18px;">
+      <div class="recipe-summary-grid">
+        <article class="recipe-stat-card">
+          <span>Total Recipes</span>
+          <strong><?php echo (int) $recipeStats['total']; ?></strong>
+          <small>All recipes in CMS</small>
+        </article>
+        <article class="recipe-stat-card">
+          <span>Published</span>
+          <strong><?php echo (int) $recipeStats['published']; ?></strong>
+          <small>Visible on frontend</small>
+        </article>
+        <article class="recipe-stat-card">
+          <span>Featured</span>
+          <strong><?php echo (int) $recipeStats['featured']; ?></strong>
+          <small>Highlighted across recipes</small>
+        </article>
+        <article class="recipe-stat-card">
+          <span>Draft</span>
+          <strong><?php echo (int) $recipeStats['draft']; ?></strong>
+          <small>Not yet live</small>
+        </article>
+      </div>
+
       <div class="table-card">
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
-          <form method="get" style="display:flex; gap:10px; flex-wrap:wrap; width:100%;">
+        <div class="recipe-toolbar">
+          <form method="get" class="recipe-toolbar-form">
             <input type="hidden" name="section" value="recipes">
-            <input type="hidden" name="recipe_id" value="<?php echo (int)$recipeEditingId; ?>">
-            <div class="field" style="margin:0; flex:1;">
-              <label style="display:block;">Search</label>
-              <input type="text" name="q" value="<?php echo e((string)($_GET['q'] ?? '')); ?>" placeholder="Search by name/slug/category" style="width:100%;">
+            <input type="hidden" name="recipe_id" value="<?php echo (int) $recipeEditingId; ?>">
+            <div class="field" style="margin:0;">
+              <label>Search</label>
+              <input type="text" name="q" value="<?php echo e($q); ?>" placeholder="Search by name, slug, or category">
             </div>
-            <div class="field" style="margin:0; width:220px;">
-              <label style="display:block;">Category</label>
-              <select name="cat" style="width:100%;">
-                <option value="">All</option>
-                <?php foreach ($recipesCategories as $c): ?>
-                  <option value="<?php echo e($c); ?>" <?php echo (($_GET['cat'] ?? '') === $c) ? 'selected' : ''; ?>><?php echo e($c); ?></option>
+            <div class="field" style="margin:0;">
+              <label>Category</label>
+              <select name="cat">
+                <option value="">All categories</option>
+                <?php foreach ($recipesCategories as $categoryOption): ?>
+                  <option value="<?php echo e($categoryOption); ?>" <?php echo $catFilter === $categoryOption ? 'selected' : ''; ?>><?php echo e($categoryOption); ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
-            <div class="actions" style="align-self:flex-end;">
-              <button type="submit">Filter</button>
+            <div class="field" style="margin:0;">
+              <label>Featured</label>
+              <select name="featured">
+                <option value="all" <?php echo $featuredFilter === 'all' ? 'selected' : ''; ?>>All</option>
+                <option value="featured" <?php echo $featuredFilter === 'featured' ? 'selected' : ''; ?>>Featured only</option>
+                <option value="standard" <?php echo $featuredFilter === 'standard' ? 'selected' : ''; ?>>Non-featured</option>
+              </select>
+            </div>
+            <div class="field" style="margin:0;">
+              <label>Status</label>
+              <select name="status">
+                <option value="all" <?php echo $statusFilter === 'all' ? 'selected' : ''; ?>>All</option>
+                <option value="published" <?php echo $statusFilter === 'published' ? 'selected' : ''; ?>>Published</option>
+                <option value="draft" <?php echo $statusFilter === 'draft' ? 'selected' : ''; ?>>Draft</option>
+              </select>
+            </div>
+            <div class="actions recipe-toolbar-actions">
+              <button type="submit">Apply Filters</button>
+              <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">Reset</a>
             </div>
           </form>
         </div>
 
-        <table class="admin-table" style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Slug</th>
-              <th>Category</th>
-              <th>Publish</th>
-              <th>Featured</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php
-              $q = trim((string)($_GET['q'] ?? ''));
-              $catFilter = trim((string)($_GET['cat'] ?? ''));
-              $rows = $recipeListRows ?? [];
-              $filtered = array_filter($rows, static function ($r) use ($q, $catFilter) {
-                  if ($catFilter !== '' && (string)$r['category'] !== $catFilter) return false;
-                  if ($q === '') return true;
-                  $hay = mb_strtolower((string)$r['name'] . ' ' . (string)$r['slug'] . ' ' . (string)$r['category']);
-                  return mb_strpos($hay, mb_strtolower($q)) !== false;
-              });
+        <div class="recipe-results-meta">
+          <div>
+            <strong><?php echo (int) count($filtered); ?></strong> recipe<?php echo count($filtered) === 1 ? '' : 's'; ?> match current filters
+          </div>
+          <div class="hint">
+            Preview opens the frontend recipe page for published recipes. Duplicate creates a draft copy.
+          </div>
+        </div>
 
-              foreach ($filtered as $r):
-            ?>
+        <div class="recipe-table-wrap">
+          <table class="admin-table recipe-admin-table">
+            <thead>
               <tr>
-                <td><?php echo (int)$r['id']; ?></td>
-                <td><?php echo e((string)$r['name']); ?></td>
-                <td><?php echo e((string)$r['slug']); ?></td>
-                <td><?php echo e((string)$r['category']); ?></td>
-                <td><?php echo (!empty($r['is_published'])) ? 'Yes' : 'No'; ?></td>
-                <td><?php echo (!empty($r['is_featured'])) ? 'Yes' : 'No'; ?></td>
-                <td>
-                  <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes&recipe_id=<?php echo (int)$r['id']; ?>">Edit</a>
-                    <form method="post" style="margin:0;">
-                      <input type="hidden" name="section" value="recipes_delete">
-                      <input type="hidden" name="recipe_id" value="<?php echo (int)$r['id']; ?>">
-                      <button type="submit" class="btn danger" onclick="return confirm('Delete this recipe?');">Delete</button>
-                    </form>
-
-                    <form method="post" style="margin:0;">
-                      <input type="hidden" name="section" value="recipes_toggle">
-                      <input type="hidden" name="recipe_id" value="<?php echo (int)$r['id']; ?>">
-                      <input type="hidden" name="toggle_field" value="is_published">
-                      <input type="hidden" name="toggle_value" value="<?php echo !empty($r['is_published']) ? 0 : 1; ?>">
-                      <button type="submit" class="btn secondary"><?php echo !empty($r['is_published']) ? 'Unpublish' : 'Publish'; ?></button>
-                    </form>
-
-                    <form method="post" style="margin:0;">
-                      <input type="hidden" name="section" value="recipes_toggle">
-                      <input type="hidden" name="recipe_id" value="<?php echo (int)$r['id']; ?>">
-                      <input type="hidden" name="toggle_field" value="is_featured">
-                      <input type="hidden" name="toggle_value" value="<?php echo !empty($r['is_featured']) ? 0 : 1; ?>">
-                      <button type="submit" class="btn secondary"><?php echo !empty($r['is_featured']) ? 'Unfeature' : 'Feature'; ?></button>
-                    </form>
-                  </div>
-                </td>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Featured</th>
+                <th>Actions</th>
               </tr>
-            <?php endforeach; ?>
+            </thead>
+            <tbody>
+              <?php foreach ($filtered as $recipeRow): ?>
+                <?php
+                  $recipeId = (int) ($recipeRow['id'] ?? 0);
+                  $recipeName = (string) ($recipeRow['name'] ?? '');
+                  $recipeSlug = (string) ($recipeRow['slug'] ?? '');
+                  $recipeCategory = (string) ($recipeRow['category'] ?? '');
+                  $recipeTime = (int) ($recipeRow['cook_time_minutes'] ?? 0);
+                  $recipeServings = (int) ($recipeRow['servings'] ?? 0);
+                  $recipeImage = $recipeRow['thumbnail_image'] ?: ($recipeRow['hero_image'] ?? null);
+                  $recipeIsPublished = !empty($recipeRow['is_published']);
+                  $recipeIsFeatured = !empty($recipeRow['is_featured']);
+                ?>
+                <tr>
+                  <td>
+                    <img
+                      class="recipe-table-image"
+                      src="<?php echo e(cms_asset_preview(is_string($recipeImage) ? $recipeImage : null)); ?>"
+                      alt="<?php echo e($recipeName); ?>"
+                    >
+                  </td>
+                  <td>
+                    <div class="recipe-name-cell">
+                      <strong><?php echo e($recipeName); ?></strong>
+                      <span><?php echo e($recipeSlug); ?></span>
+                      <small><?php echo e(mb_strimwidth((string) ($recipeRow['short_description'] ?? ''), 0, 110, '...')); ?></small>
+                    </div>
+                  </td>
+                  <td><?php echo e($recipeCategory); ?></td>
+                  <td>
+                    <div class="recipe-inline-metrics">
+                      <strong><?php echo $recipeTime > 0 ? (int) $recipeTime . ' min' : 'TBD'; ?></strong>
+                      <small><?php echo $recipeServings > 0 ? 'Serves ' . (int) $recipeServings : 'Servings TBD'; ?></small>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="recipe-cell-stack">
+                      <span class="recipe-pill <?php echo $recipeIsPublished ? 'live' : 'draft'; ?>">
+                        <?php echo $recipeIsPublished ? 'Published' : 'Draft'; ?>
+                      </span>
+                      <form method="post" style="margin:0;">
+                        <input type="hidden" name="section" value="recipes_toggle">
+                        <input type="hidden" name="recipe_id" value="<?php echo $recipeId; ?>">
+                        <input type="hidden" name="toggle_field" value="is_published">
+                        <input type="hidden" name="toggle_value" value="<?php echo $recipeIsPublished ? 0 : 1; ?>">
+                        <button type="submit" class="btn secondary"><?php echo $recipeIsPublished ? 'Move to Draft' : 'Publish'; ?></button>
+                      </form>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="recipe-cell-stack">
+                      <span class="recipe-pill <?php echo $recipeIsFeatured ? 'featured' : 'standard'; ?>">
+                        <?php echo $recipeIsFeatured ? 'Featured' : 'Standard'; ?>
+                      </span>
+                      <form method="post" style="margin:0;">
+                        <input type="hidden" name="section" value="recipes_toggle">
+                        <input type="hidden" name="recipe_id" value="<?php echo $recipeId; ?>">
+                        <input type="hidden" name="toggle_field" value="is_featured">
+                        <input type="hidden" name="toggle_value" value="<?php echo $recipeIsFeatured ? 0 : 1; ?>">
+                        <button type="submit" class="btn secondary"><?php echo $recipeIsFeatured ? 'Unfeature' : 'Feature'; ?></button>
+                      </form>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="recipe-action-grid">
+                      <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes&recipe_id=<?php echo $recipeId; ?>">Edit</a>
+                      <?php if ($recipeIsPublished): ?>
+                        <a class="btn secondary" href="<?php echo e(recipe_preview_url($recipeSlug)); ?>" target="_blank" rel="noreferrer">Preview</a>
+                      <?php else: ?>
+                        <span class="recipe-action-disabled" title="Publish this recipe to preview it on the frontend.">Preview</span>
+                      <?php endif; ?>
+                      <form method="post" style="margin:0;">
+                        <input type="hidden" name="section" value="recipes_duplicate">
+                        <input type="hidden" name="recipe_id" value="<?php echo $recipeId; ?>">
+                        <button type="submit" class="btn secondary">Duplicate</button>
+                      </form>
+                      <form method="post" style="margin:0;">
+                        <input type="hidden" name="section" value="recipes_delete">
+                        <input type="hidden" name="recipe_id" value="<?php echo $recipeId; ?>">
+                        <button type="submit" class="btn danger" onclick="return confirm('Delete this recipe?');">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
 
-            <?php if (empty($filtered)): ?>
-              <tr><td colspan="7" style="text-align:center; padding:14px;">No recipes found.</td></tr>
-            <?php endif; ?>
-          </tbody>
-        </table>
+              <?php if (empty($filtered)): ?>
+                <tr>
+                  <td colspan="7" style="text-align:center; padding:18px;">No recipes found for the current filter set.</td>
+                </tr>
+              <?php endif; ?>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="form-card">
-        <div style="margin-bottom:10px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <div class="recipe-form-header">
           <div>
             <p class="brand-kicker" style="color:#f56c1b;"><?php echo $recipeEditingId > 0 ? 'Edit Recipe' : 'Add Recipe'; ?></p>
             <h3><?php echo $recipeEditingId > 0 ? 'Update recipe' : 'Create recipe'; ?></h3>
+            <p class="hint" style="margin-top:8px;">
+              Organize content in sections, preview media before saving, and drag rows to reorder ingredients and steps.
+            </p>
           </div>
-          <?php if ($recipeEditingId > 0): ?>
-            <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">+ Add New</a>
-          <?php endif; ?>
+          <div class="recipe-form-header-actions">
+            <?php if ($previewLink !== '' && $formVals['is_published'] === '1'): ?>
+              <a class="btn secondary" href="<?php echo e($previewLink); ?>" target="_blank" rel="noreferrer">Preview Current</a>
+            <?php endif; ?>
+            <?php if ($recipeEditingId > 0): ?>
+              <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">+ Add New</a>
+            <?php endif; ?>
+          </div>
         </div>
 
         <form method="post" enctype="multipart/form-data">
           <input type="hidden" name="section" value="recipes">
           <?php if ($recipeEditingId > 0): ?>
-            <input type="hidden" name="recipe_id" value="<?php echo (int)$recipeEditingId; ?>">
+            <input type="hidden" name="recipe_id" value="<?php echo (int) $recipeEditingId; ?>">
           <?php endif; ?>
 
-          <div class="form-grid">
-            <div class="field">
-              <label>Recipe Name</label>
-              <input type="text" name="r_name" value="<?php echo e($formVals['name']); ?>" required>
+          <details class="recipe-accordion" open>
+            <summary>Basic Info</summary>
+            <div class="recipe-accordion-body form-grid">
+              <div class="field">
+                <label>Recipe Name</label>
+                <input type="text" name="r_name" value="<?php echo e($formVals['name']); ?>" required>
+              </div>
+              <div class="field">
+                <label>Slug</label>
+                <input type="text" name="r_slug" value="<?php echo e($formVals['slug']); ?>" placeholder="kanda-poha" required>
+              </div>
+              <div class="field">
+                <label>Category</label>
+                <input type="text" name="r_category" value="<?php echo e($formVals['category']); ?>" placeholder="Poha, Sabudana, Snacks" required>
+              </div>
+              <div class="field full">
+                <label>Short Description</label>
+                <textarea name="r_short_description" rows="4" required><?php echo e($formVals['short_description']); ?></textarea>
+              </div>
             </div>
+          </details>
 
-            <div class="field">
-              <label>Slug</label>
-              <input type="text" name="r_slug" value="<?php echo e($formVals['slug']); ?>" placeholder="kanda-poha" required>
+          <details class="recipe-accordion" open>
+            <summary>Media</summary>
+            <div class="recipe-accordion-body">
+              <div class="form-grid">
+                <div class="field full">
+                  <label>Hero Image URL</label>
+                  <input
+                    type="url"
+                    name="r_hero_image_url"
+                    value="<?php echo e($formVals['hero_image_url']); ?>"
+                    placeholder="https://example.com/hero.jpg"
+                    data-preview-target="<?php echo e(preview_target('recipe_hero_image')); ?>"
+                  >
+                </div>
+                <div class="field full">
+                  <label>Hero Image Upload</label>
+                  <input
+                    class="file-input"
+                    type="file"
+                    name="r_hero_image"
+                    accept="image/*"
+                    data-preview-target="<?php echo e(preview_target('recipe_hero_image')); ?>"
+                  >
+                </div>
+                <div class="field full">
+                  <label>Thumbnail Image URL</label>
+                  <input
+                    type="url"
+                    name="r_thumbnail_image_url"
+                    value="<?php echo e($formVals['thumbnail_image_url']); ?>"
+                    placeholder="https://example.com/thumb.jpg"
+                    data-preview-target="<?php echo e(preview_target('recipe_thumbnail_image')); ?>"
+                  >
+                </div>
+                <div class="field full">
+                  <label>Thumbnail Image Upload</label>
+                  <input
+                    class="file-input"
+                    type="file"
+                    name="r_thumbnail_image"
+                    accept="image/*"
+                    data-preview-target="<?php echo e(preview_target('recipe_thumbnail_image')); ?>"
+                  >
+                </div>
+              </div>
+              <div class="recipe-preview-grid">
+                <div class="image-preview-card">
+                  <span>Hero Preview</span>
+                  <img
+                    id="<?php echo e(preview_target('recipe_hero_image')); ?>"
+                    src="<?php echo e(cms_asset_preview($heroPreviewValue)); ?>"
+                    alt="Recipe hero preview"
+                  >
+                </div>
+                <div class="image-preview-card">
+                  <span>Thumbnail Preview</span>
+                  <img
+                    id="<?php echo e(preview_target('recipe_thumbnail_image')); ?>"
+                    src="<?php echo e(cms_asset_preview($thumbnailPreviewValue)); ?>"
+                    alt="Recipe thumbnail preview"
+                  >
+                </div>
+              </div>
             </div>
+          </details>
 
-            <div class="field">
-              <label>Category</label>
-              <input type="text" name="r_category" value="<?php echo e($formVals['category']); ?>" placeholder="Poha, Sabudana, Snacks" required>
+          <details class="recipe-accordion" open>
+            <summary>Recipe Details</summary>
+            <div class="recipe-accordion-body form-grid">
+              <div class="field">
+                <label>Cook Time (minutes)</label>
+                <input type="number" min="0" name="r_cook_time_minutes" value="<?php echo e($formVals['cook_time_minutes']); ?>">
+              </div>
+              <div class="field">
+                <label>Servings</label>
+                <input type="number" min="1" name="r_servings" value="<?php echo e($formVals['servings']); ?>">
+              </div>
+              <div class="field">
+                <label>Difficulty</label>
+                <input type="text" name="r_difficulty" value="<?php echo e($formVals['difficulty']); ?>" placeholder="Easy, Medium, Hard">
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <select name="r_is_published">
+                  <option value="1" <?php echo $formVals['is_published'] === '1' ? 'selected' : ''; ?>>Published</option>
+                  <option value="0" <?php echo $formVals['is_published'] === '0' ? 'selected' : ''; ?>>Draft</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Featured</label>
+                <select name="r_is_featured">
+                  <option value="1" <?php echo $formVals['is_featured'] === '1' ? 'selected' : ''; ?>>Featured</option>
+                  <option value="0" <?php echo $formVals['is_featured'] === '0' ? 'selected' : ''; ?>>Standard</option>
+                </select>
+              </div>
             </div>
+          </details>
 
-            <div class="field full">
-              <label>Short Description</label>
-              <textarea name="r_short_description" required><?php echo e($formVals['short_description']); ?></textarea>
-            </div>
-
-            <div class="field">
-              <label>Cook Time (minutes)</label>
-              <input type="number" min="0" name="r_cook_time_minutes" value="<?php echo e($formVals['cook_time_minutes']); ?>">
-            </div>
-
-            <div class="field">
-              <label>Servings</label>
-              <input type="number" min="0" name="r_servings" value="<?php echo e($formVals['servings']); ?>">
-            </div>
-
-            <div class="field">
-              <label>Difficulty</label>
-              <input type="text" name="r_difficulty" value="<?php echo e($formVals['difficulty']); ?>" placeholder="Easy, Medium, Hard">
-            </div>
-
-            <div class="field full">
-              <label>Hero Image URL</label>
-              <input type="url" name="r_hero_image_url" value="<?php echo e($formVals['hero_image_url']); ?>" placeholder="https://example.com/hero.jpg">
-            </div>
-
-            <div class="field full">
-              <label>Thumbnail Image URL</label>
-              <input type="url" name="r_thumbnail_image_url" value="<?php echo e($formVals['thumbnail_image_url']); ?>" placeholder="https://example.com/thumb.jpg">
-            </div>
-
-            <div class="field full">
-              <label>Hero Image Upload</label>
-              <input class="file-input" type="file" name="r_hero_image" accept="image/*">
-            </div>
-
-            <div class="field full">
-              <label>Thumbnail Image Upload</label>
-              <input class="file-input" type="file" name="r_thumbnail_image" accept="image/*">
-            </div>
-
-            <div class="field">
-              <label>Publish</label>
-              <select name="r_is_published">
-                <option value="1" <?php echo $formVals['is_published'] === '1' ? 'selected' : ''; ?>>Published</option>
-                <option value="0" <?php echo $formVals['is_published'] === '0' ? 'selected' : ''; ?>>Unpublished</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Featured</label>
-              <select name="r_is_featured">
-                <option value="1" <?php echo $formVals['is_featured'] === '1' ? 'selected' : ''; ?>>Featured</option>
-                <option value="0" <?php echo $formVals['is_featured'] === '0' ? 'selected' : ''; ?>>Not Featured</option>
-              </select>
-            </div>
-
-            <div class="field full">
-              <label>Tips (one per line)</label>
-              <textarea name="r_tips" rows="4"><?php echo e((string)$formVals['tips']); ?></textarea>
-            </div>
-
-            <div class="field full">
-              <label>Related Products (optional)</label>
-              <select name="r_related_products[]" multiple size="<?php echo max(4, min(8, count($productOptions))); ?>">
-                <?php foreach ($productOptions as $product): ?>
-                  <?php $productId = (int) ($product['id'] ?? 0); ?>
-                  <option value="<?php echo $productId; ?>" <?php echo in_array($productId, $formVals['related_products'], true) ? 'selected' : ''; ?>>
-                    <?php echo e((string) ($product['name'] ?? 'Product')); ?><?php echo !empty($product['category']) ? ' (' . e((string) $product['category']) . ')' : ''; ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-              <p class="hint">Hold Ctrl (Windows) or Command (Mac) to select multiple products.</p>
-            </div>
-
-            <div style="margin-top:18px;">
-              <div class="hint" style="margin-bottom:10px;">Ingredients (add/remove rows)</div>
-              <div id="r-ingredients-container" class="dynamic-list">
-                <?php
-                  $r_in = $editingRecipe ? $editingIngredients : $editingIngredients;
-                  $rIngredientsToRender = !empty($editingIngredients) ? $editingIngredients : [''];
-                  foreach ($rIngredientsToRender as $ing):
-                ?>
-                  <div class="dynamic-row">
-                    <input type="text" name="r_ingredients[]" value="<?php echo e((string)$ing); ?>" placeholder="Ingredient" required>
+          <details class="recipe-accordion" open>
+            <summary>Ingredients</summary>
+            <div class="recipe-accordion-body">
+              <p class="hint" style="margin-bottom:10px;">Add rows, remove rows, and drag to reorder before saving.</p>
+              <div id="r-ingredients-container" class="dynamic-list sortable-container">
+                <?php foreach ($recipeIngredientsToRender as $ingredientValue): ?>
+                  <div class="dynamic-row sortable-row" draggable="true">
+                    <span class="drag-handle" title="Drag to reorder">::</span>
+                    <input type="text" name="r_ingredients[]" value="<?php echo e((string) $ingredientValue); ?>" placeholder="Ingredient" required>
                     <button type="button" class="danger" onclick="removeDynamicRow(this)">Remove</button>
                   </div>
                 <?php endforeach; ?>
@@ -1183,16 +1485,17 @@ render_admin_header('CMS Content', 'cms.php');
                 <button type="button" onclick="addIngredientRow('r-ingredients-container')">Add Ingredient</button>
               </div>
             </div>
+          </details>
 
-            <div style="margin-top:18px;">
-              <div class="hint" style="margin-bottom:10px;">Steps (add/remove rows)</div>
-              <div id="r-steps-container" class="dynamic-list">
-                <?php
-                  $rStepsToRender = !empty($editingSteps) ? $editingSteps : [''];
-                  foreach ($rStepsToRender as $st):
-                ?>
-                  <div class="dynamic-row">
-                    <textarea name="r_steps[]" rows="3" placeholder="Step" required><?php echo e((string)$st); ?></textarea>
+          <details class="recipe-accordion" open>
+            <summary>Steps</summary>
+            <div class="recipe-accordion-body">
+              <p class="hint" style="margin-bottom:10px;">Drag steps into the final cooking order that should appear on the frontend.</p>
+              <div id="r-steps-container" class="dynamic-list sortable-container">
+                <?php foreach ($recipeStepsToRender as $stepValue): ?>
+                  <div class="dynamic-row sortable-row" draggable="true">
+                    <span class="drag-handle" title="Drag to reorder">::</span>
+                    <textarea name="r_steps[]" rows="3" placeholder="Step" required><?php echo e((string) $stepValue); ?></textarea>
                     <button type="button" class="danger" onclick="removeDynamicRow(this)">Remove</button>
                   </div>
                 <?php endforeach; ?>
@@ -1201,17 +1504,320 @@ render_admin_header('CMS Content', 'cms.php');
                 <button type="button" onclick="addStepRow('r-steps-container')">Add Step</button>
               </div>
             </div>
+          </details>
 
-            <div class="actions" style="margin-top:18px;">
-              <button type="submit"><?php echo $recipeEditingId > 0 ? 'Update Recipe' : 'Save Recipe'; ?></button>
-              <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">Cancel</a>
+          <details class="recipe-accordion" open>
+            <summary>Tips</summary>
+            <div class="recipe-accordion-body">
+              <div class="field" style="margin:0;">
+                <label>Tips (one per line)</label>
+                <textarea name="r_tips" rows="5" placeholder="One useful serving or cooking tip per line"><?php echo e((string) $formVals['tips']); ?></textarea>
+              </div>
             </div>
+          </details>
+
+          <details class="recipe-accordion" open>
+            <summary>Related Products</summary>
+            <div class="recipe-accordion-body">
+              <div class="field" style="margin:0;">
+                <label>Suggested HIRA products</label>
+                <select name="r_related_products[]" multiple size="<?php echo max(4, min(8, count($productOptions))); ?>">
+                  <?php foreach ($productOptions as $product): ?>
+                    <?php $productId = (int) ($product['id'] ?? 0); ?>
+                    <option value="<?php echo $productId; ?>" <?php echo in_array($productId, $formVals['related_products'], true) ? 'selected' : ''; ?>>
+                      <?php echo e((string) ($product['name'] ?? 'Product')); ?><?php echo !empty($product['category']) ? ' (' . e((string) $product['category']) . ')' : ''; ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+                <p class="hint">Hold Ctrl (Windows) or Command (Mac) to select multiple products for the recipe details page.</p>
+              </div>
+            </div>
+          </details>
+
+          <div class="actions" style="margin-top:18px;">
+            <button type="submit"><?php echo $recipeEditingId > 0 ? 'Update Recipe' : 'Save Recipe'; ?></button>
+            <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">Cancel</a>
           </div>
         </form>
       </div>
     </div>
   </article>
 </section>
+
+<style>
+  .recipe-summary-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .recipe-stat-card {
+    padding: 18px 20px;
+    border-radius: 22px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 247, 237, 0.94));
+    border: 1px solid rgba(231, 122, 68, 0.12);
+    box-shadow: 0 24px 60px -42px rgba(99, 60, 28, 0.45);
+    display: grid;
+    gap: 6px;
+  }
+
+  .recipe-stat-card span,
+  .recipe-stat-card small {
+    color: #7a6b62;
+  }
+
+  .recipe-stat-card strong {
+    font-size: 2rem;
+    line-height: 1;
+    color: #2f261f;
+  }
+
+  .recipe-toolbar-form {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(160px, 0.8fr)) auto;
+    align-items: end;
+  }
+
+  .recipe-toolbar-actions {
+    justify-content: flex-start;
+  }
+
+  .recipe-results-meta {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 14px 0 16px;
+  }
+
+  .recipe-table-wrap {
+    overflow-x: auto;
+  }
+
+  .recipe-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1020px;
+  }
+
+  .recipe-table-image {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    object-fit: cover;
+    border: 1px solid rgba(231, 122, 68, 0.14);
+  }
+
+  .recipe-name-cell {
+    display: grid;
+    gap: 6px;
+  }
+
+  .recipe-name-cell span {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #c76d2e;
+  }
+
+  .recipe-name-cell small,
+  .recipe-inline-metrics small {
+    color: #7a6b62;
+  }
+
+  .recipe-inline-metrics,
+  .recipe-cell-stack {
+    display: grid;
+    gap: 8px;
+  }
+
+  .recipe-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .recipe-pill.live {
+    background: rgba(21, 128, 61, 0.12);
+    color: #166534;
+  }
+
+  .recipe-pill.draft {
+    background: rgba(120, 113, 108, 0.12);
+    color: #57534e;
+  }
+
+  .recipe-pill.featured {
+    background: rgba(249, 115, 22, 0.12);
+    color: #c2410c;
+  }
+
+  .recipe-pill.standard {
+    background: rgba(217, 119, 6, 0.08);
+    color: #92400e;
+  }
+
+  .recipe-action-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .recipe-action-grid form,
+  .recipe-cell-stack form {
+    display: block;
+  }
+
+  .recipe-action-disabled {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: rgba(120, 113, 108, 0.12);
+    color: #78716c;
+    font-weight: 700;
+    cursor: not-allowed;
+  }
+
+  .recipe-form-header {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .recipe-form-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .recipe-accordion {
+    border: 1px solid rgba(231, 122, 68, 0.12);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 18px 48px -40px rgba(47, 38, 31, 0.45);
+  }
+
+  .recipe-accordion + .recipe-accordion {
+    margin-top: 14px;
+  }
+
+  .recipe-accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 18px 22px;
+    font-weight: 700;
+    color: #2f261f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .recipe-accordion summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .recipe-accordion summary::after {
+    content: '+';
+    font-size: 1.2rem;
+    color: #c2410c;
+  }
+
+  .recipe-accordion[open] summary::after {
+    content: '−';
+  }
+
+  .recipe-accordion-body {
+    padding: 0 22px 22px;
+  }
+
+  .recipe-preview-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 18px;
+  }
+
+  .recipe-preview-grid .image-preview-card {
+    display: grid;
+    gap: 10px;
+  }
+
+  .recipe-preview-grid .image-preview-card span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7a6b62;
+  }
+
+  .sortable-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .sortable-row.dragging {
+    opacity: 0.55;
+  }
+
+  .drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    min-height: 44px;
+    border-radius: 14px;
+    background: rgba(231, 122, 68, 0.08);
+    border: 1px dashed rgba(231, 122, 68, 0.24);
+    color: #c2410c;
+    font-weight: 700;
+    cursor: grab;
+    user-select: none;
+  }
+
+  @media (max-width: 1180px) {
+    .recipe-summary-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .recipe-toolbar-form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .recipe-summary-grid,
+    .recipe-toolbar-form,
+    .recipe-preview-grid,
+    .recipe-action-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sortable-row {
+      grid-template-columns: 1fr;
+    }
+
+    .drag-handle {
+      width: 100%;
+    }
+  }
+</style>
 
 <script>
 (() => {
@@ -1317,9 +1923,77 @@ render_admin_header('CMS Content', 'cms.php');
 
   document.querySelectorAll('[data-preview-target]').forEach(bindPreview);
 
+  let draggedRow = null;
+
+  const decorateSortableRow = (row) => {
+    if (!(row instanceof HTMLElement) || row.dataset.sortReady === '1') {
+      return;
+    }
+
+    row.dataset.sortReady = '1';
+    row.classList.add('sortable-row');
+    row.setAttribute('draggable', 'true');
+
+    if (!row.querySelector('.drag-handle')) {
+      const handle = document.createElement('span');
+      handle.className = 'drag-handle';
+      handle.textContent = '::';
+      handle.title = 'Drag to reorder';
+      row.insertBefore(handle, row.firstChild);
+    }
+
+    row.addEventListener('dragstart', () => {
+      draggedRow = row;
+      row.classList.add('dragging');
+    });
+
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      draggedRow = null;
+    });
+  };
+
+  const decorateSortableContainer = (container) => {
+    if (!(container instanceof HTMLElement) || container.dataset.sortReady === '1') {
+      return;
+    }
+
+    container.dataset.sortReady = '1';
+
+    container.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      const targetRow = event.target.closest('.sortable-row');
+
+      if (!draggedRow || !targetRow || draggedRow === targetRow || targetRow.parentElement !== container) {
+        return;
+      }
+
+      const targetRect = targetRow.getBoundingClientRect();
+      const shouldInsertAfter = event.clientY > targetRect.top + targetRect.height / 2;
+
+      if (shouldInsertAfter) {
+        targetRow.after(draggedRow);
+      } else {
+        targetRow.before(draggedRow);
+      }
+    });
+  };
+
+  document.querySelectorAll('.sortable-container').forEach((container) => {
+    decorateSortableContainer(container);
+    Array.from(container.querySelectorAll('.dynamic-row')).forEach(decorateSortableRow);
+  });
+
   const buildDynamicRow = (type, name, placeholder) => {
     const row = document.createElement('div');
-    row.className = 'dynamic-row';
+    row.className = 'dynamic-row sortable-row';
+    row.setAttribute('draggable', 'true');
+
+    const handle = document.createElement('span');
+    handle.className = 'drag-handle';
+    handle.textContent = '::';
+    handle.title = 'Drag to reorder';
+    row.appendChild(handle);
 
     if (type === 'textarea') {
       const textarea = document.createElement('textarea');
@@ -1344,6 +2018,7 @@ render_admin_header('CMS Content', 'cms.php');
     button.addEventListener('click', () => window.removeDynamicRow(button));
     row.appendChild(button);
 
+    decorateSortableRow(row);
     return row;
   };
 
