@@ -1128,3 +1128,53 @@ render_admin_header('CMS Content', 'cms.php');
 
 <?php
 render_admin_footer();
+?>
+<script>
+(() => {
+  const root = document.getElementById('cms-tab-root');
+  if (!root) return;
+
+  const tabEls = root.querySelectorAll('[data-cms-tab], [data-cms-tab-btn]');
+  const panelEls = root.querySelectorAll('[data-cms-tab-panel]');
+
+  const getTabName = (el) => {
+    return (el.getAttribute('data-cms-tab') || el.getAttribute('data-cms-tab-btn') || '').trim();
+  };
+
+  const clearActive = () => {
+    tabEls.forEach(t => {
+      // keep existing styles; only toggle common active patterns if they exist
+      t.classList.remove('active');
+      t.setAttribute('aria-pressed', 'false');
+    });
+    panelEls.forEach(p => {
+      p.style.display = 'none';
+    });
+  };
+
+  const showPanelFor = (name) => {
+    const target = root.querySelector('[data-cms-tab-panel="' + CSS.escape(name) + '"]');
+    if (!target) return;
+
+    clearActive();
+    // activate the matching tab
+    tabEls.forEach(t => {
+      if (getTabName(t) === name) {
+        t.classList.add('active');
+        t.setAttribute('aria-pressed', 'true');
+      }
+    });
+    target.style.display = '';
+  };
+
+  // Click wiring
+  tabEls.forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      const name = getTabName(tab);
+      if (!name) return;
+      showPanelFor(name);
+    });
+  });
+})();
+</script>
