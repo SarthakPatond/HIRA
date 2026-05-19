@@ -2025,15 +2025,13 @@ render_admin_header('CMS Content', 'cms.php');
   window.removeDynamicRow = (button) => {
     const row = button.closest('.dynamic-row');
     const container = row?.parentElement;
-    if (!row || !container) {
-      return;
-    }
+    if (!row || !container) return;
 
-    if (container.children.length === 1) {
+    // Only count actual dynamic rows (ignore any other nodes)
+    const dynamicRows = Array.from(container.querySelectorAll(':scope > .dynamic-row'));
+    if (dynamicRows.length <= 1) {
       const field = row.querySelector('input, textarea');
-      if (field) {
-        field.value = '';
-      }
+      if (field) field.value = '';
       return;
     }
 

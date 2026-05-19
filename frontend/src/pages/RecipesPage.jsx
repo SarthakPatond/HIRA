@@ -74,9 +74,6 @@ export default function RecipesPage() {
     return recipes.filter((recipe) => recipe.category === activeCategory);
   }, [activeCategory, recipes]);
 
-  const leadRecipe = filteredRecipes[0] || recipes[0] || null;
-  const supportingRecipes = (filteredRecipes[0] ? filteredRecipes.slice(1) : recipes.slice(1)).slice(0, 6);
-
   if (loading) return <LoadingState label="Loading recipes" />;
   if (error) return <ErrorState message={error} />;
 
@@ -138,83 +135,19 @@ export default function RecipesPage() {
           </div>
         </div>
 
-        {leadRecipe ? (
-          <div className="mt-10 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-            <Reveal>
-              <article className="group relative overflow-hidden rounded-[2.2rem] border border-hira-orange/12 bg-white shadow-soft">
-                <ContentImage
-                  src={leadRecipe.heroImage || leadRecipe.image}
-                  alt={leadRecipe.name}
-                  className="h-[540px] w-full object-cover transition duration-500 group-hover:scale-105"
-                  fallbacks={[
-                    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80"
-                  ]}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/38 to-transparent" />
-                <div className="absolute inset-x-8 bottom-8 top-8 flex max-w-2xl flex-col justify-end text-white">
-                  <div className="flex flex-wrap gap-3">
-                    <span className="rounded-full bg-white/16 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-hira-wheat backdrop-blur">
-                      {leadRecipe.category}
-                    </span>
-                    <span className="rounded-full bg-white/16 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white backdrop-blur">
-                      {leadRecipe.cookingTimeMinutes} min
-                    </span>
-                    <span className="rounded-full bg-white/16 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white backdrop-blur">
-                      Serves {leadRecipe.servings}
-                    </span>
-                  </div>
-
-                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.3em] text-hira-wheat">
-                    Featured Recipe
-                  </p>
-                  <h3 className="mt-4 font-display text-5xl leading-none sm:text-6xl">
-                    {leadRecipe.name}
-                  </h3>
-                  <p className="mt-5 max-w-xl text-lg leading-8 text-white/84">
-                    {leadRecipe.shortDescription}
-                  </p>
-
-                  <div className="mt-8 flex flex-wrap gap-4">
-                    <Link
-                      to={`/recipes/${leadRecipe.slug}`}
-                      className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-hira-red transition hover:scale-[1.02]"
-                    >
-                      View full recipe
-                    </Link>
-                    <Link
-                      to="/products"
-                      className="rounded-full border border-white/24 bg-white/10 px-7 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/16"
-                    >
-                      Explore HIRA products
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            </Reveal>
-
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
-              {supportingRecipes.slice(0, 3).map((recipe) => (
-                <Reveal key={recipe.slug}>
-                  <RecipeCard recipe={recipe} />
-                </Reveal>
-              ))}
-            </div>
+        {filteredRecipes.length ? (
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {filteredRecipes.map((recipe) => (
+              <Reveal key={recipe.slug}>
+                <RecipeCard recipe={recipe} />
+              </Reveal>
+            ))}
           </div>
         ) : (
           <div className="mt-10 rounded-[2rem] border border-dashed border-hira-orange/18 bg-white/80 p-10 text-center text-hira-ink/70 shadow-soft">
             Recipes will appear here as soon as they are published from the CMS.
           </div>
         )}
-
-        {supportingRecipes.length > 3 ? (
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {supportingRecipes.slice(3).map((recipe) => (
-              <Reveal key={recipe.slug}>
-                <RecipeCard recipe={recipe} />
-              </Reveal>
-            ))}
-          </div>
-        ) : null}
       </Section>
     </div>
   );

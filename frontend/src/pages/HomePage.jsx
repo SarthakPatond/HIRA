@@ -173,6 +173,15 @@ export default function HomePage() {
     );
   }, [activeCategory, liveProducts]);
 
+  const recipeCategoryChips = ["Poha", "Sabudana", "Snacks"];
+  const filteredFeaturedRecipes = useMemo(() => {
+    const filtered = featuredRecipes.filter((recipe) =>
+      activeRecipeCategory ? productMatchesCategory(recipe.category, activeRecipeCategory) : true
+    );
+
+    return filtered.length ? filtered : featuredRecipes;
+  }, [activeRecipeCategory, featuredRecipes]);
+
   if (loading) return <LoadingState label="Loading homepage" />;
   if (error) return <ErrorState message={error} />;
 
@@ -193,15 +202,6 @@ export default function HomePage() {
     0,
     3
   );
-
-  const recipeCategoryChips = ["Poha", "Sabudana", "Snacks"];
-  const filteredFeaturedRecipes = useMemo(() => {
-    const filtered = featuredRecipes.filter((recipe) =>
-      activeRecipeCategory ? productMatchesCategory(recipe.category, activeRecipeCategory) : true
-    );
-
-    return filtered.length ? filtered : featuredRecipes;
-  }, [activeRecipeCategory, featuredRecipes]);
 
   const leadRecipe = filteredFeaturedRecipes[0] || null;
   const supportingRecipes = filteredFeaturedRecipes.slice(1, 4);

@@ -48,27 +48,12 @@ function normalizeRecipeListing(recipe) {
   };
 }
 
-function ShareButton({ as = "button", ...props }) {
-  const Tag = as;
-
-  return (
-    <Tag
-      {...props}
-      className={[
-        "rounded-full border border-hira-orange/12 bg-white px-5 py-3 text-sm font-semibold text-hira-ink transition hover:border-hira-orange/35 hover:text-hira-orange",
-        props.className || ""
-      ].join(" ").trim()}
-    />
-  );
-}
-
 export default function RecipeDetailsPage() {
   const { slug } = useParams();
   const carouselRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [copied, setCopied] = useState(false);
   const [recipe, setRecipe] = useState(null);
   const [relatedRecipes, setRelatedRecipes] = useState([]);
 
@@ -129,21 +114,6 @@ export default function RecipeDetailsPage() {
 
   const description =
     recipe.shortDescription || `Discover ${recipe.name} made with HIRA products.`;
-  const shareUrl =
-    typeof window !== "undefined" ? window.location.href : `http://localhost:5173/recipes/${recipe.slug}`;
-  const shareText = `${recipe.name} | HIRA Recipes`;
-
-  async function handleCopyLink() {
-    try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
-      }
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
-  }
 
   function scrollCarousel(direction) {
     if (!carouselRef.current) return;
@@ -231,33 +201,6 @@ export default function RecipeDetailsPage() {
                 </div>
               </div>
 
-              <div className="mt-8">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
-                  Share this recipe
-                </p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <ShareButton type="button" onClick={handleCopyLink}>
-                    {copied ? "Copied" : "Copy Link"}
-                  </ShareButton>
-                  <ShareButton
-                    as="a"
-                    href={`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    WhatsApp
-                  </ShareButton>
-                  <ShareButton
-                    as="a"
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Facebook
-                  </ShareButton>
-                </div>
-              </div>
-
               <div className="mt-10 flex flex-wrap gap-4">
                 <Link
                   to="/products"
@@ -276,9 +219,9 @@ export default function RecipeDetailsPage() {
           </Reveal>
         </div>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[0.38fr_0.62fr]">
+        <div className="mt-12 grid gap-8 items-stretch lg:grid-cols-[0.38fr_0.62fr]">
           <Reveal>
-            <div className="rounded-[2rem] border border-hira-orange/10 bg-white p-7 shadow-soft">
+            <div className="h-full rounded-[2rem] border border-hira-orange/10 bg-white p-7 shadow-soft">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
                 Ingredients
               </p>
@@ -303,7 +246,7 @@ export default function RecipeDetailsPage() {
           </Reveal>
 
           <Reveal>
-            <div className="rounded-[2rem] border border-hira-orange/10 bg-white p-7 shadow-soft">
+            <div className="h-full rounded-[2rem] border border-hira-orange/10 bg-white p-7 shadow-soft">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
