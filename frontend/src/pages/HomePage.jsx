@@ -459,110 +459,58 @@ export default function HomePage() {
 </div>
       </Section>
 
-      <Section className="relative bg-white/70">
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
-              Featured Recipes
-            </p>
-            <h2 className="mt-3 font-display text-5xl leading-none text-hira-forest sm:text-6xl">
-              Cook the HIRA pantry beautifully
-            </h2>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-hira-ink/72">
-              {recipeError ||
-                "A curated recipe section with one standout feature and supporting ideas below, built around Poha, Sabudana, and snack-time favorites."}
-            </p>
-          </div>
-          <Link
-            to="/recipes"
-            className="rounded-full border border-hira-orange/20 bg-white px-6 py-3 text-sm font-semibold text-hira-ink transition hover:-translate-y-0.5 hover:border-hira-orange/40 hover:text-hira-orange"
-          >
-            View all recipes
-          </Link>
-        </div>
+      <Section className="bg-white">
+        <Container className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
+                  FROM HIRA KITCHENS
+                </p>
 
-        <div className="mt-8 hide-scrollbar flex gap-3 overflow-x-auto pb-2">
-          {recipeCategoryChips.map((category) => (
-            <button
-              key={category}
-              type="button"
-              onClick={() => setActiveRecipeCategory(category)}
-              className={`whitespace-nowrap rounded-full px-5 py-3 text-sm font-semibold transition ${
-                activeRecipeCategory === category
-                  ? "bg-hira-orange text-white shadow-soft"
-                  : "border border-hira-orange/10 bg-white text-hira-ink/80 hover:border-hira-orange/30 hover:text-hira-orange"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+                <h2 className="mt-3 font-display text-3xl sm:text-4xl text-hira-forest">
+                  Recipes crafted for modern kitchens
+                </h2>
 
-        {leadRecipe ? (
-          <div className="mt-10 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <Reveal>
-              <article className="group relative overflow-hidden rounded-[2.2rem] border border-hira-orange/12 bg-white shadow-soft">
-                <ContentImage
-                  src={leadRecipe.heroImage || leadRecipe.image}
-                  alt={leadRecipe.name}
-                  className="h-[540px] w-full object-cover transition duration-500 group-hover:scale-105"
-                  fallbacks={[
-                    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80"
-                  ]}
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/42 to-transparent" />
-                <div className="absolute inset-x-8 bottom-8 top-8 flex max-w-2xl flex-col justify-end text-white">
-                  <div className="flex flex-wrap gap-3">
-                    <span className="rounded-full bg-white/14 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-hira-wheat backdrop-blur">
-                      {leadRecipe.category}
-                    </span>
-                    <span className="rounded-full bg-white/14 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white backdrop-blur">
-                      {leadRecipe.cookingTimeMinutes} min
-                    </span>
-                    <span className="rounded-full bg-white/14 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white backdrop-blur">
-                      Serves {leadRecipe.servings}
-                    </span>
-                  </div>
-                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.3em] text-hira-wheat">
-                    Featured recipe
-                  </p>
-                  <h3 className="mt-4 font-display text-5xl leading-none sm:text-6xl">
-                    {leadRecipe.name}
-                  </h3>
-                  <p className="mt-5 max-w-xl text-lg leading-8 text-white/84">
-                    {leadRecipe.shortDescription}
-                  </p>
-                  <div className="mt-8 flex flex-wrap gap-4">
-                    <Link
-                      to={`/recipes/${leadRecipe.slug}`}
-                      className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-hira-red transition hover:scale-[1.02]"
-                    >
-                      View full recipe
-                    </Link>
-                    <Link
-                      to="/products"
-                      className="rounded-full border border-white/20 bg-white/10 px-7 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/16"
-                    >
-                      Explore pantry products
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            </Reveal>
+                <p className="mt-4 max-w-3xl text-base leading-7 text-hira-ink/72">
+                  Discover simple, delicious recipes made using HIRA essentials — from everyday poha favorites to snack-time classics.
+                </p>
+              </div>
 
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
-              {supportingRecipes.map((recipe) => (
-                <Reveal key={recipe.slug}>
-                  <RecipeCard recipe={recipe} />
-                </Reveal>
+              <Link
+                to="/recipes"
+                className="mt-2 rounded-full border border-hira-orange/20 bg-white px-6 py-3 text-sm font-semibold text-hira-ink transition hover:-translate-y-0.5 hover:border-hira-orange/40 hover:text-hira-orange"
+              >
+                View all recipes
+              </Link>
+            </div>
+
+            <div className="hide-scrollbar flex gap-3 overflow-x-auto pb-2">
+              {recipeCategoryChips.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setActiveRecipeCategory(category)}
+                  className={`whitespace-nowrap rounded-full px-5 py-3 text-sm font-semibold transition ${
+                    activeRecipeCategory === category
+                      ? "bg-hira-orange text-white shadow-soft"
+                      : "border border-hira-orange/10 bg-white text-hira-ink/80 hover:border-hira-orange/30 hover:text-hira-orange"
+                  }`}
+                >
+                  {category}
+                </button>
               ))}
             </div>
           </div>
-        ) : (
-          <div className="mt-10 rounded-[2rem] border border-dashed border-hira-orange/18 bg-white/85 px-6 py-10 text-center text-hira-ink/70 shadow-soft">
-            Featured recipes will appear here once they are available in CMS.
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {(filteredFeaturedRecipes || []).slice(0, 4).map((recipe) => (
+              <Reveal key={recipe.slug}>
+                <RecipeCard recipe={recipe} />
+              </Reveal>
+            ))}
           </div>
-        )}
+        </Container>
       </Section>
 
       <Section className="bg-hira-cream/70">

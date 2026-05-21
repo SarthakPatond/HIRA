@@ -14,9 +14,11 @@ export const RECIPES = [
     shortDescription:
       "A classic Maharashtrian-style poha with caramelized onions, mustard seeds, and a burst of lemon.",
     image:
-      "/brand-art/1.png",
+      "https://images.unsplash.com/photo-1604908176997-125f25f8f2e5?auto=format&fit=crop&w=1200&q=80",
     heroImage:
-      "/brand-art/1.png",
+      "https://images.unsplash.com/photo-1604908176997-125f25f8f2e5?auto=format&fit=crop&w=1600&q=80",
+    thumbnail:
+      "https://images.unsplash.com/photo-1604908176997-125f25f8f2e5?auto=format&fit=crop&w=600&q=80",
     ingredients: [
       "2 cups thick poha",
       "1 medium onion (finely sliced)",
@@ -44,6 +46,7 @@ export const RECIPES = [
       "Don’t soak poha for long—just a quick rinse is enough.",
       "For extra flavor, add roasted peanuts during the final mix."
     ],
+    servings: 2,
     relatedSlugs: ["indori-poha", "vegetable-poha", "sabudana-khichdi"]
   },
   {
@@ -180,9 +183,11 @@ export const RECIPES = [
     shortDescription:
       "Crispy sabudana vadas with a soft center—ideal for evening snacks and fast bites.",
     image:
-      "/brand-art/1.png",
+      "https://images.unsplash.com/photo-1604908177522-7d3e1ef3b3f6?auto=format&fit=crop&w=1200&q=80",
     heroImage:
-      "/brand-art/1.png",
+      "https://images.unsplash.com/photo-1604908177522-7d3e1ef3b3f6?auto=format&fit=crop&w=1600&q=80",
+    thumbnail:
+      "https://images.unsplash.com/photo-1604908177522-7d3e1ef3b3f6?auto=format&fit=crop&w=600&q=80",
     ingredients: [
       "1 cup sabudana",
       "2 tbsp roasted peanuts (crushed)",
@@ -205,6 +210,7 @@ export const RECIPES = [
       "Ensure sabudana is properly soaked for binding.",
       "Add a pinch of cumin for extra aroma."
     ],
+    servings: 2,
     relatedSlugs: ["sabudana-khichdi", "sabudana-kheer", "kanda-poha"]
   },
   {
@@ -313,6 +319,141 @@ export const RECIPES = [
       "Add spices after frying to keep crunch."
     ],
     relatedSlugs: ["snacks-chai-time-mix", "vegetable-poha", "sabudana-kheer"]
+  },
+
+  // ===== Dummy recipes for UI polish (Poha / Snacks) =====
+  {
+    slug: "masala-poha",
+    name: "Masala Poha",
+    category: "Poha",
+    cookingTimeMinutes: 25,
+    difficulty: "Medium",
+    shortDescription:
+      "A comforting masala poha with a spiced onion base, peanuts, and a balanced tangy-salty finish.",
+    image:
+      "https://images.unsplash.com/photo-1549931319-a43f7b9f1f0a?auto=format&fit=crop&w=1200&q=80",
+    heroImage:
+      "https://images.unsplash.com/photo-1549931319-a43f7b9f1f0a?auto=format&fit=crop&w=1600&q=80",
+    thumbnail:
+      "https://images.unsplash.com/photo-1549931319-a43f7b9f1f0a?auto=format&fit=crop&w=600&q=80",
+    servings: 2,
+    ingredients: [
+      "2 cups thick poha",
+      "1 medium onion (chopped)",
+      "1 tbsp oil + 1 tbsp ghee (optional)",
+      "1 tsp mustard seeds",
+      "1/2 tsp cumin seeds",
+      "1/2 tsp ginger (grated, optional)",
+      "1–2 green chilies (chopped)",
+      "1/4 tsp turmeric powder",
+      "1/2 tsp red chili powder (optional)",
+      "1/2 cup roasted peanuts",
+      "Salt to taste",
+      "1 tbsp lemon juice",
+      "Coriander leaves (for garnish)"
+    ],
+    steps: [
+      "Rinse poha quickly, drain, and keep aside for 5–7 minutes.",
+      "Heat oil (and ghee if using). Add mustard seeds and cumin; let them crackle.",
+      "Add onions (and ginger/chilies if using). Sauté until soft and lightly golden.",
+      "Stir in turmeric (and red chili powder if using).",
+      "Add poha and toss gently. Add salt and cook for 3–4 minutes on low.",
+      "Add roasted peanuts and cook 1 minute more so flavors combine.",
+      "Finish with lemon juice and coriander. Serve immediately."
+    ],
+    tips: [
+      "Toss poha gently—overmixing makes it mushy.",
+      "Add peanuts right before finishing for better crunch.",
+      "Adjust chili powder to your spice preference."
+    ],
+    relatedSlugs: ["kanda-poha", "indori-poha", "vegetable-poha"]
+  },
+  {
+    slug: "peanut-poha",
+    name: "Peanut Poha",
+    category: "Poha",
+    cookingTimeMinutes: 22,
+    difficulty: "Easy",
+    shortDescription:
+      "Nutty, satisfying peanut poha with caramelized onions and crisp roasted peanuts in every bite.",
+    image:
+      "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1200&q=80",
+    heroImage:
+      "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1600&q=80",
+    thumbnail:
+      "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=600&q=80",
+    servings: 2,
+    ingredients: [
+      "2 cups thick poha",
+      "1 onion (thinly sliced)",
+      "2 tbsp oil",
+      "1 tsp mustard seeds",
+      "1 tsp cumin seeds",
+      "8 curry leaves",
+      "1–2 green chilies (slit)",
+      "1/4 tsp turmeric powder",
+      "1/2 cup roasted peanuts",
+      "Salt to taste",
+      "1 tbsp lemon juice",
+      "Coriander leaves"
+    ],
+    steps: [
+      "Rinse poha quickly and drain. Keep aside for 5 minutes.",
+      "Heat oil; add mustard and cumin seeds. Add curry leaves and green chilies.",
+      "Add onions and cook until caramelized and fragrant.",
+      "Sprinkle turmeric and add poha; toss gently.",
+      "Cook for 3 minutes on low. Stir in peanuts and cook 1 more minute.",
+      "Turn off heat, add lemon juice and coriander.",
+      "Serve warm."
+    ],
+    tips: [
+      "Roast peanuts for extra crunch.",
+      "Caramelize onions for a sweeter, deeper flavor.",
+      "Add lemon after cooking to keep it fresh."
+    ],
+    relatedSlugs: ["kanda-poha", "masala-poha", "sabudana-khichdi"]
+  },
+  {
+    slug: "poha-cutlet",
+    name: "Poha Cutlet",
+    category: "Snacks",
+    cookingTimeMinutes: 40,
+    difficulty: "Medium",
+    shortDescription:
+      "Crispy poha cutlets with a soft interior—spiced potato, poha, and a golden pan-fry finish.",
+    image:
+      "https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=1200&q=80",
+    heroImage:
+      "https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=1600&q=80",
+    thumbnail:
+      "https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=600&q=80",
+    servings: 2,
+    ingredients: [
+      "2 cups cooked/soaked poha (thick poha)",
+      "1 medium potato (boiled, mashed)",
+      "1/2 cup finely chopped onion",
+      "2 green chilies (chopped)",
+      "1 tbsp chopped coriander",
+      "1/2 tsp cumin seeds (optional)",
+      "1/4 tsp turmeric",
+      "1/2 tsp garam masala",
+      "Salt to taste",
+      "Bread crumbs (as needed for binding)",
+      "Oil for shallow frying"
+    ],
+    steps: [
+      "Soak/rinse poha quickly, then squeeze excess water and let it cool.",
+      "Mix poha with mashed potato, onion, chilies, coriander, spices, and salt.",
+      "Add bread crumbs if needed to bind. Shape into small cutlets.",
+      "Shallow fry in medium-hot oil until golden brown on both sides.",
+      "Drain on tissue and serve with chutney."
+    ],
+    tips: [
+      "Let the mixture cool before shaping for cleaner edges.",
+      "Keep oil medium-hot to avoid burning and raw centers.",
+      "Serve immediately for maximum crispiness."
+    ],
+    relatedSlugs: ["kanda-poha", "peanut-poha", "sabudana-vada"]
   }
 ];
 
