@@ -41,6 +41,8 @@ a {
   overflow-x: hidden;
 }
 
+/* Prevent layout squeezing by ensuring key containers can shrink */
+.admin-shell,
 .sidebar,
 .main-panel,
 .grid,
@@ -177,8 +179,23 @@ a {
 }
 
 .grid.cards {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+
+/* KPI cards responsiveness (override only; no fixed widths) */
+@media (max-width: 1024px) {
+  .grid.cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .grid.cards {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+/* (removed duplicate/extra responsive block; desktop remains untouched) */
 
 .card,
 .table-card,
@@ -219,6 +236,15 @@ a {
   background:
     radial-gradient(circle at top right, rgba(249, 115, 22, 0.08), transparent 28%),
     rgba(255, 255, 255, 0.9);
+
+  /* KPI/form premium: slightly less empty space */
+  padding: 20px;
+}
+
+.form-card form,
+.form-card .form-grid,
+.form-card .field {
+  gap: 12px;
 }
 
 .split {
@@ -236,6 +262,68 @@ a {
 
 .table-wrap table {
   min-width: 720px;
+}
+
+/* Recipes table polish (micro rhythm, no HTML changes) */
+table .recipe-thumb,
+table img.recipe-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Align image + text vertically centered */
+table td.recipe-info,
+table .recipe-info {
+  vertical-align: middle;
+}
+
+/* Recipe title / slug / description spacing + typography */
+table td.recipe-title,
+table .recipe-title {
+  font-weight: 600;
+}
+
+table td.recipe-title,
+table .recipe-title,
+table td.recipe-slug,
+table .recipe-slug,
+table td.recipe-description,
+table .recipe-description {
+  padding: 0;
+}
+
+table td.recipe-title,
+table .recipe-title {
+  margin: 0;
+}
+
+table td.recipe-slug,
+table .recipe-slug {
+  color: var(--orange);
+  font-size: 13px;
+}
+
+table td.recipe-description,
+table .recipe-description {
+  color: rgba(107, 98, 92, 0.98);
+  font-size: 12.5px;
+}
+
+/* Use a single padding system for recipe rows (16px) */
+table tbody td {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  vertical-align: middle;
+}
+
+/* If the CMS uses wrappers instead of classes, preserve rhythm */
+table td .recipe-title,
+table td .recipe-slug,
+table td .recipe-description {
+  display: block;
 }
 
 table {
@@ -282,30 +370,93 @@ th {
   color: var(--muted);
 }
 
+/* Compact actions (Edit/Preview) + compact pills (other actions) */
 .actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.actions > * {
+  height: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* premium alignment without width jump */
+  min-width: 100px;
+
+  border-radius: 10px;
+
+  /* avoid hover movement */
+  transform: none;
+}
+
+.actions > *:hover {
+  transform: none;
+}
+
+.actions .btn,
+.actions button,
+.actions input[type="submit"] {
+  height: 40px;
+  min-height: 40px;
+  border-radius: 10px;
+}
+
+/* Edit + Preview width parity (first two actionable controls in each .actions block) */
+.actions > *:nth-child(1),
+.actions > *:nth-child(2) {
+  width: 140px;
+  min-width: 140px;
+}
+
+/* Avoid width/height “jumping” on hover */
+.actions > *:hover {
+  transform: none;
+}
+
+/* Toolbar input fallback for wider search + alignment */
+.toolbar input[type="search"],
+.recipe-toolbar input[type="search"] {
+  height: 40px;
+  min-height: 40px;
 }
 
 .btn,
 button,
 input[type="submit"] {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 18px;
+
+  height: 40px;
+  min-height: 40px;
+  padding: 0 16px;
+
   border: 0;
-  border-radius: 999px;
+  border-radius: 10px;
+
   background: linear-gradient(135deg, var(--orange), var(--gold));
   color: white;
   cursor: pointer;
   font-weight: 700;
   letter-spacing: 0.01em;
-  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+
+  transition: box-shadow 180ms ease, filter 180ms ease;
   box-shadow: 0 12px 26px -14px rgba(231, 122, 68, 0.55);
+
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover {
+  transform: none;
 }
 
 .btn.secondary {
@@ -501,10 +652,25 @@ textarea {
 
 /* Tablet */
 @media (max-width: 1024px) {
-  .admin-shell {
-    grid-template-columns: 1fr;
+  .form-card {
+    width: 100%;
+    padding: 20px;
+    overflow: hidden;
   }
 
+  /* KPI cards (Recipes) */
+  .recipe-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* keep table horizontally scrollable */
+  .recipe-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* keep existing layout rules from leaking into desktop:
+     only responsive overrides allowed inside this media query */
   .sidebar {
     width: 100%;
   }
@@ -538,66 +704,340 @@ textarea {
   .table-wrap table {
     min-width: 560px;
   }
+
+  /* Toolbar: wrap properly */
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    align-items: flex-end !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form .field {
+    flex: 1 1 200px !important;
+    margin: 0 !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form .actions {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+
+  /* Forms: single-column on tablet */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Search toolbar cleanup */
+[data-cms-tab-root] .toolbar,
+[data-cms-tab-root] .recipe-toolbar,
+.toolbar,
+.recipe-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+}
+
+/* Desktop single row */
+@media (min-width: 769px) {
+  [data-cms-tab-root] .toolbar,
+  [data-cms-tab-root] .recipe-toolbar,
+  .toolbar,
+  .recipe-toolbar {
+    flex-wrap: nowrap;
+    align-items: flex-end;
+  }
+}
+
+[data-cms-tab-root] .toolbar .search,
+[data-cms-tab-root] .recipe-toolbar .search,
+.toolbar .search,
+.recipe-toolbar .search {
+  flex: 1 1 auto;
+  min-width: 280px; /* search wider */
+}
+
+[data-cms-tab-root] .toolbar input[type="search"],
+[data-cms-tab-root] .recipe-toolbar input[type="search"],
+.toolbar input[type="search"],
+.recipe-toolbar input[type="search"] {
+  width: 100%;
+}
+
+[data-cms-tab-root] .toolbar select,
+[data-cms-tab-root] .toolbar input[type="text"],
+[data-cms-tab-root] .toolbar input[type="search"],
+[data-cms-tab-root] .recipe-toolbar select,
+[data-cms-tab-root] .recipe-toolbar input[type="text"],
+[data-cms-tab-root] .recipe-toolbar input[type="search"],
+.toolbar select,
+.toolbar input[type="text"],
+.toolbar input[type="search"],
+.recipe-toolbar select,
+.recipe-toolbar input[type="text"],
+.recipe-toolbar input[type="search"] {
+  height: 40px;
+  min-height: 40px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Apply + Reset same width (buttons in toolbar) */
+[data-cms-tab-root] .toolbar button,
+[data-cms-tab-root] .toolbar .btn,
+[data-cms-tab-root] .recipe-toolbar button,
+[data-cms-tab-root] .recipe-toolbar .btn,
+.toolbar button,
+.toolbar .btn,
+.recipe-toolbar button,
+.recipe-toolbar .btn {
+  height: 40px;
+  min-height: 40px;
+  min-width: 140px;
+  width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Make filter controls equal width when in the toolbar */
+[data-cms-tab-root] .toolbar .filter,
+[data-cms-tab-root] .recipe-toolbar .filter,
+.toolbar .filter,
+.recipe-toolbar .filter {
+  flex: 0 0 160px;
+  min-width: 160px;
 }
 
 /* Mobile */
 @media (max-width: 768px) {
-  .main-panel {
-    padding: var(--space-12);
-    width: 100%;
+  /* Ensure full-width main content and prevent squeezing from sidebar/grid */
+  .admin-shell {
+    grid-template-columns: 1fr;
   }
 
-  .topbar {
-    padding: 14px 14px;
-    border-radius: 22px;
-  }
-
-  .grid {
-    gap: var(--space-12);
-  }
-
-  .table-card,
-  .form-card,
-  .card {
-    padding: var(--space-16);
-  }
-
-  /* Sidebar spacing for small screens */
   .sidebar {
+    width: 100%;
     padding: 18px 16px;
   }
 
-  .nav-list {
-    gap: 8px;
-    margin: 18px 0;
+  .main-panel {
+    padding: var(--space-12);
+    width: 100%;
+    min-width: 0;
   }
 
-  .nav-list a {
-    padding: 12px 14px;
-    border-radius: 14px;
+  .form-card{
+    width:100%;
+    padding:16px;
+    border-radius:16px;
+    overflow:hidden;
   }
 
-  /* CMS tab buttons should wrap naturally */
-  [data-cms-tab-btn] {
-    white-space: normal;
+  .form-grid{
+    grid-template-columns:1fr;
   }
 
-  /* Ensure CMS tab row can wrap */
-  [data-cms-tab-btn-row],
-  div[style*="data-cms-tab-btn"],
-  [data-cms-tab-root] {
-    flex-wrap: wrap;
+  .table-wrap{
+    max-width:100%;
   }
 
-  .table-wrap table {
-    min-width: 520px;
+  .table-wrap table{
+    min-width:0;
+  }
+
+  /* Recipes-only scoped overrides */
+  article.form-card[data-cms-tab-panel="recipes"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    min-width: 0 !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] > div {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .table-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form .field {
+    width: 100% !important;
+    flex: none !important;
+    margin: 0 !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form .field input,
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form .field select {
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form .actions {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form .actions > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-admin-table {
+    min-width: 850px !important;
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .form-grid {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .form-grid input,
+  article.form-card[data-cms-tab-panel="recipes"] .form-grid select,
+  article.form-card[data-cms-tab-panel="recipes"] .form-grid textarea {
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-action-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-action-grid > * {
+    min-width: 90px !important;
+    flex: 1 !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-preview-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] img.recipe-table-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .image-preview-card img,
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-table-image {
+    max-width: 100% !important;
+    height: auto !important;
+    overflow: hidden;
+    display: block;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] form[enctype="multipart/form-data"] {
+    width: 100% !important;
+    display: block !important;
+    min-width: 0 !important;
   }
 }
 
 /* Small mobile */
-@media (max-width: 420px) {
-  .table-wrap table {
-    min-width: 600px;
+@media (max-width: 480px) {
+  .form-card {
+    padding: 12px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form .field {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form input,
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form select,
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-toolbar-form button {
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-action-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-action-grid > * {
+    flex: 1 1 auto !important;
+    min-width: 90px !important;
+    width: auto !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-admin-table {
+    min-width: 850px !important;
+    width: 100% !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .image-preview-card img,
+  article.form-card[data-cms-tab-panel="recipes"] .recipe-table-image {
+    max-width: 100% !important;
+    height: auto !important;
+    overflow: hidden;
+    display: block;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] form[enctype="multipart/form-data"] {
+    width: 100% !important;
+    display: block !important;
+    min-width: 0 !important;
+  }
+
+  article.form-card[data-cms-tab-panel="recipes"] .form-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
