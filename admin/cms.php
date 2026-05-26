@@ -655,8 +655,8 @@ render_admin_header('CMS Content', 'cms.php');
         </div>
         <div class="field">
           <label>Hero Media URL</label>
-          <input type="url" name="home_hero_media_url" data-preview-target="<?php echo e(preview_target('home_hero_media')); ?>" value="<?php echo e($home['hero']['media_url'] ?? ''); ?>">
-          <p class="hint">Paste an image URL or a video URL. If you also upload a file below, the upload will be used.</p>
+          <input type="text" name="home_hero_media_url" data-preview-target="<?php echo e(preview_target('home_hero_media')); ?>" value="<?php echo e($home['hero']['media_url'] ?? ''); ?>" placeholder="https://example.com/media.jpg or /uploads/file.png">
+          <p class="hint">Paste an external image/video URL or keep an uploaded local path. If you also upload a file below, the upload will be used.</p>
         </div>
         <div class="field">
           <label>Hero Media Upload</label>
@@ -691,7 +691,7 @@ render_admin_header('CMS Content', 'cms.php');
         </div>
         <div class="field">
           <label>Story Image URL</label>
-          <input type="url" name="home_story_image" data-preview-target="<?php echo e(preview_target('home_story_image')); ?>" value="<?php echo e($home['story']['image'] ?? ''); ?>">
+          <input type="text" name="home_story_image" data-preview-target="<?php echo e(preview_target('home_story_image')); ?>" value="<?php echo e($home['story']['image'] ?? ''); ?>" placeholder="https://example.com/story.jpg or /uploads/file.png">
         </div>
         <div class="field">
           <label>Story Image Upload</label>
@@ -769,7 +769,7 @@ render_admin_header('CMS Content', 'cms.php');
             </div>
             <div class="field">
               <label>Image URL</label>
-              <input type="url" name="cat<?php echo $i + 1; ?>_image" data-preview-target="<?php echo e(preview_target('cat' . ($i + 1) . '_image')); ?>" value="<?php echo e($home['categories'][$i]['image'] ?? ''); ?>">
+              <input type="text" name="cat<?php echo $i + 1; ?>_image" data-preview-target="<?php echo e(preview_target('cat' . ($i + 1) . '_image')); ?>" value="<?php echo e($home['categories'][$i]['image'] ?? ''); ?>" placeholder="https://example.com/category.jpg or /uploads/file.png">
             </div>
             <div class="field">
               <label>Upload Image</label>
@@ -803,7 +803,7 @@ render_admin_header('CMS Content', 'cms.php');
             </div>
             <div class="field">
               <label>Image URL</label>
-              <input type="url" name="coming<?php echo $i + 1; ?>_image" data-preview-target="<?php echo e(preview_target('coming' . ($i + 1) . '_image')); ?>" value="<?php echo e($home['coming_soon']['items'][$i]['image'] ?? ''); ?>">
+              <input type="text" name="coming<?php echo $i + 1; ?>_image" data-preview-target="<?php echo e(preview_target('coming' . ($i + 1) . '_image')); ?>" value="<?php echo e($home['coming_soon']['items'][$i]['image'] ?? ''); ?>" placeholder="https://example.com/coming-soon.jpg or /uploads/file.png">
             </div>
             <div class="field">
               <label>Upload Image</label>
@@ -873,7 +873,7 @@ render_admin_header('CMS Content', 'cms.php');
         </div>
         <div class="field">
           <label>Hero Image URL</label>
-          <input type="url" name="about_hero_image" data-preview-target="<?php echo e(preview_target('about_hero_image')); ?>" value="<?php echo e($about['hero_image'] ?? ''); ?>">
+          <input type="text" name="about_hero_image" data-preview-target="<?php echo e(preview_target('about_hero_image')); ?>" value="<?php echo e($about['hero_image'] ?? ''); ?>" placeholder="https://example.com/about-hero.jpg or /uploads/file.png">
         </div>
         <div class="field">
           <label>Hero Image Upload</label>
@@ -944,7 +944,7 @@ render_admin_header('CMS Content', 'cms.php');
         </div>
         <div class="field">
           <label>Hero Image URL</label>
-          <input type="url" name="contact_hero_image" data-preview-target="<?php echo e(preview_target('contact_hero_image')); ?>" value="<?php echo e($contact['hero_image'] ?? ''); ?>">
+          <input type="text" name="contact_hero_image" data-preview-target="<?php echo e(preview_target('contact_hero_image')); ?>" value="<?php echo e($contact['hero_image'] ?? ''); ?>" placeholder="https://example.com/contact-hero.jpg or /uploads/file.png">
         </div>
         <div class="field">
           <label>Hero Image Upload</label>
@@ -1377,10 +1377,10 @@ render_admin_header('CMS Content', 'cms.php');
                 <div class="field full">
                   <label>Hero Image URL</label>
                   <input
-                    type="url"
+                    type="text"
                     name="r_hero_image_url"
                     value="<?php echo e($formVals['hero_image_url']); ?>"
-                    placeholder="https://example.com/hero.jpg"
+                    placeholder="https://example.com/hero.jpg or /uploads/file.png"
                     data-preview-target="<?php echo e(preview_target('recipe_hero_image')); ?>"
                   >
                 </div>
@@ -1397,10 +1397,10 @@ render_admin_header('CMS Content', 'cms.php');
                 <div class="field full">
                   <label>Thumbnail Image URL</label>
                   <input
-                    type="url"
+                    type="text"
                     name="r_thumbnail_image_url"
                     value="<?php echo e($formVals['thumbnail_image_url']); ?>"
-                    placeholder="https://example.com/thumb.jpg"
+                    placeholder="https://example.com/thumb.jpg or /uploads/file.png"
                     data-preview-target="<?php echo e(preview_target('recipe_thumbnail_image')); ?>"
                   >
                 </div>

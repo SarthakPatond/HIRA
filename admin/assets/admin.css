@@ -248,9 +248,40 @@ a {
 }
 
 .split {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 22px;
-  grid-template-columns: 1.3fr 0.9fr;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
+  min-width: 0;
+}
+
+/* Dashboard split cards: prevent card/content overflow while preserving desktop layout */
+.split > .table-card {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.split .table-wrap {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.split .table-wrap table {
+  min-width: 0;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.split .table-wrap table,
+.split .table-wrap tbody,
+.split .table-wrap tr,
+.split .table-wrap td,
+.split .table-wrap th {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .table-wrap {
@@ -687,7 +718,7 @@ textarea {
   }
 
   .split {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .form-grid {
@@ -847,6 +878,16 @@ textarea {
 
   .table-wrap table{
     min-width:0;
+  }
+
+  .split > .table-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .split .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Recipes-only scoped overrides */
@@ -1040,4 +1081,3 @@ textarea {
     grid-template-columns: 1fr !important;
   }
 }
-

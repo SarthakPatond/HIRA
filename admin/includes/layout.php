@@ -17,6 +17,7 @@ function admin_nav_items(): array
 function render_admin_header(string $title, string $activePage): void
 {
     $flash = get_flash();
+    $adminCssVersion = (string) (filemtime(dirname(__DIR__) . '/assets/admin.css') ?: time());
     ?>
     <!doctype html>
     <html lang="en">
@@ -24,7 +25,7 @@ function render_admin_header(string $title, string $activePage): void
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title><?php echo e($title); ?> | Hira Admin</title>
-      <link rel="stylesheet" href="/HIRA/admin/assets/admin.css">
+      <link rel="stylesheet" href="/HIRA/admin/assets/admin.css?v=<?php echo e($adminCssVersion); ?>">
     </head>
     <body>
       <div class="admin-shell">

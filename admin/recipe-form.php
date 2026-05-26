@@ -309,13 +309,13 @@ render_admin_header($editing ? 'Edit Recipe' : 'Add Recipe', 'recipes.php');
 
       <div class="field full">
         <label for="hero_image_url">Hero Image URL</label>
-        <input id="hero_image_url" type="url" name="hero_image_url" value="<?php echo e($formData['hero_image_url']); ?>" placeholder="https://example.com/hero.jpg">
-        <p class="hint">Paste an external URL or upload below. Upload takes priority.</p>
+        <input id="hero_image_url" type="text" name="hero_image_url" value="<?php echo e($formData['hero_image_url']); ?>" placeholder="https://example.com/hero.jpg or /uploads/file.png">
+        <p class="hint">Paste an external URL or keep an uploaded local path. Upload takes priority.</p>
       </div>
 
       <div class="field full">
         <label for="thumbnail_image_url">Thumbnail Image URL</label>
-        <input id="thumbnail_image_url" type="url" name="thumbnail_image_url" value="<?php echo e($formData['thumbnail_image_url']); ?>" placeholder="https://example.com/thumb.jpg">
+        <input id="thumbnail_image_url" type="text" name="thumbnail_image_url" value="<?php echo e($formData['thumbnail_image_url']); ?>" placeholder="https://example.com/thumb.jpg or /uploads/file.png">
       </div>
 
       <div class="field full">
