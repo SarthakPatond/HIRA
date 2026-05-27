@@ -1,4 +1,10 @@
 import { Link } from "react-router-dom";
+import {
+  FaEnvelope,
+  FaFacebookF,
+  FaInstagram,
+  FaWhatsapp
+} from "react-icons/fa";
 import { usePageContent } from "../hooks/usePageContent";
 import Seo from "./Seo";
 import Container from "./Container";
@@ -19,7 +25,7 @@ export default function Footer() {
         }}
       />
       <footer className="mt-16 border-t border-hira-orange/10 bg-white">
-        <Container className="grid gap-10 py-12 md:grid-cols-[1.2fr_1fr_1fr]">
+        <Container className="grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
           <div>
             <p className="text-xs uppercase tracking-[0.26em] text-hira-orange">
               Hira FMCG
@@ -59,6 +65,51 @@ export default function Footer() {
               <p>{content?.address || "Ujjain, Madhya Pradesh, India"}</p>
               <p>{content?.phone || "+91 98765 43210"}</p>
               <p>{content?.email || "hello@hirafmcg.com"}</p>
+            </div>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.26em] text-hira-orange">
+              Connect With Us
+            </p>
+            <div className="mt-4 grid gap-3 text-sm leading-7 text-hira-ink/75">
+              <a
+                href="https://www.instagram.com/ujjainipoha?igsh=Nm1zc2tjdG42YWNs&utm_source=qr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 break-words transition hover:text-hira-orange"
+                aria-label="Instagram"
+              >
+                <FaInstagram className="shrink-0 text-base" />
+                <span>Instagram</span>
+              </a>
+              <a
+                href="https://www.facebook.com/share/18DE34oHyv/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 break-words transition hover:text-hira-orange"
+                aria-label="Facebook"
+              >
+                <FaFacebookF className="shrink-0 text-base" />
+                <span>Facebook</span>
+              </a>
+              <a
+                href="mailto:hiraindustries.ujjain@gmail.com"
+                className="inline-flex items-center gap-3 break-all transition hover:text-hira-orange"
+                aria-label="Email"
+              >
+                <FaEnvelope className="shrink-0 text-base" />
+                <span>hiraindustries.ujjain@gmail.com</span>
+              </a>
+              <a
+                href="https://wa.me/919575212055"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 break-words transition hover:text-hira-orange"
+                aria-label="WhatsApp"
+              >
+                <FaWhatsapp className="shrink-0 text-base" />
+                <span>+91 9575212055</span>
+              </a>
             </div>
           </div>
         </Container>
