@@ -68,7 +68,7 @@ export default function Navbar() {
             to="/distributor"
             className="rounded-full bg-hira-orange px-5 py-3 text-sm font-semibold text-white transition hover:bg-hira-red"
           >
-            Become Distributor
+            Become a Distributor
           </Link>
         </div>
 
@@ -123,7 +123,7 @@ export default function Navbar() {
             onClick={() => setMobileOpen(false)}
             className="mt-2 rounded-full bg-hira-orange px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-hira-red"
           >
-            Become Distributor
+            Become a Distributor
           </Link>
         </Container>
       </div>

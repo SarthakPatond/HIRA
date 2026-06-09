@@ -587,7 +587,7 @@ export default function HomePage() {
                     to={content.cta?.button_link || "/distributor"}
                     className="rounded-full bg-white px-7 py-4 text-base font-semibold text-hira-red transition hover:scale-[1.02]"
                   >
-                    {content.cta?.button_label || "Become Distributor"}
+                    {content.cta?.button_label || "Become a Distributor"}
                   </Link>
                 </div>
               </div>

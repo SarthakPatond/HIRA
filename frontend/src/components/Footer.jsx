@@ -20,7 +20,7 @@ export default function Footer() {
           "@type": "LocalBusiness",
           name: "Hira FMCG",
           address: content?.address || "Ujjain, Madhya Pradesh, India",
-          telephone: content?.phone || "+91 98765 43210",
+          // telephone: content?.phone || "+91 98765 43210",
           email: content?.email || "hello@hirafmcg.com"
         }}
       />
@@ -63,7 +63,7 @@ export default function Footer() {
             </p>
             <div className="mt-4 grid gap-3 text-sm leading-7 text-hira-ink/75">
               <p>{content?.address || "Ujjain, Madhya Pradesh, India"}</p>
-              <p>{content?.phone || "+91 98765 43210"}</p>
+              {/* <p>{content?.phone || "+91 98765 43210"}</p> */}
               <p>{content?.email || "hello@hirafmcg.com"}</p>
             </div>
           </div>

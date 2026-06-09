@@ -62,7 +62,7 @@ export default function HomeHero({ hero, story, categories = [] }) {
           <h1 className="mt-6 text-balance font-display text-5xl leading-[0.94] sm:text-6xl lg:text-[5.2rem]">
             {hero?.title || "Some traditions don't change. They evolve."}
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-hira-ink/80 sm:text-xl">
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-black sm:text-xl">
             {hero?.subtitle || "From Ujjain to the world."}
           </p>
           <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row">
@@ -76,7 +76,7 @@ export default function HomeHero({ hero, story, categories = [] }) {
               href={hero?.secondary_link}
               className="rounded-full border border-hira-orange/15 bg-white/65 px-7 py-4 text-sm font-semibold text-hira-forest transition hover:bg-white/85 sm:text-base"
             >
-              {hero?.secondary_label || "Become Distributor"}
+              {hero?.secondary_label || "Become a Distributor"}
             </HeroAction>
           </div>
         </div>
@@ -92,13 +92,13 @@ export default function HomeHero({ hero, story, categories = [] }) {
               />
             </div>
             <div className="absolute bottom-8 left-8 max-w-sm rounded-[1.75rem] border border-hira-orange/15 bg-[#FFF8F2]/92 p-6 text-hira-ink shadow-soft backdrop-blur-md">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-hira-orange">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-black-800">
                 Brand Note
               </p>
-              <p className="mt-3 font-display text-3xl leading-tight text-hira-forest">
+              <p className="mt-3 font-display text-3xl leading-tight text-black">
                 Emotion first. Product second.
               </p>
-              <p className="mt-3 text-sm leading-7 text-hira-ink/75">
+              <p className="mt-3 text-sm leading-7 text-black">
                 A calmer, more premium storytelling layout that lets the brand
                 breathe before the product details begin.
               </p>

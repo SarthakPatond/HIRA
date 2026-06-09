@@ -97,7 +97,7 @@ export default function RecipesPage() {
       <PageHero
         eyebrow="Recipes"
         title="Cook with HIRA"
-        description="Story-led, pantry-friendly recipes designed around the flavors people actually come back to."
+        description="Story-led, pantry-friendly recipes designed around the flavours people actually come back to."
         image="https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1470&q=80"
       />
 

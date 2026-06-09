@@ -211,7 +211,7 @@ function page_defaults(): array
                 'media_url' => 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1600&q=80',
                 'cta_label' => 'Discover the Story',
                 'cta_link' => '#home-story',
-                'secondary_label' => 'Become Distributor',
+                'secondary_label' => 'Become a Distributor',
                 'secondary_link' => '/distributor',
             ],
             'story' => [
@@ -320,7 +320,7 @@ function page_defaults(): array
             'cta' => [
                 'title' => "Let's grow together",
                 'text' => 'Partner with Hira to bring trusted staples, stronger shelf presence, and a more meaningful brand story into new markets.',
-                'button_label' => 'Become Distributor',
+                'button_label' => 'Become a Distributor',
                 'button_link' => '/distributor',
             ],
         ],
@@ -374,7 +374,7 @@ function page_defaults(): array
             'hero_image' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80',
             'address' => 'Ujjain, Madhya Pradesh, India',
             'email' => 'hello@hirafmcg.com',
-            'phone' => '+91 98765 43210',
+            // 'phone' => '+91 98765 43210',
             'map_embed' => '',
         ],
     ];
