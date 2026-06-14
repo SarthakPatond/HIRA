@@ -408,6 +408,10 @@ function upgrade_legacy_page_content(string $page, array $content): array
         $content['cta'] = $homeDefaults['cta'];
     }
 
+    if (($content['cta']['button_label'] ?? '') === 'Become Distributor') {
+        $content['cta']['button_label'] = 'Become a Distributor';
+    }
+
     $legacyCategories = array_map(
         static fn(array $item): string => (string) ($item['name'] ?? ''),
         $content['categories'] ?? []
