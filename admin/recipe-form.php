@@ -20,7 +20,7 @@ if ($editing) {
 
     if (!$recipe) {
         set_flash('error', 'Recipe not found.');
-        redirect('/HIRA/admin/recipes.php');
+        redirect('/admin/recipes.php');
     }
 
     $stmtIng = get_db()->prepare(
@@ -245,7 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->commit();
 
         set_flash('success', $editing ? 'Recipe updated successfully.' : 'Recipe added successfully.');
-        redirect('/HIRA/admin/recipes.php');
+        redirect('/admin/recipes.php');
     } catch (Throwable $exception) {
         if (isset($pdo) && $pdo->inTransaction()) {
             $pdo->rollBack();
@@ -416,7 +416,7 @@ render_admin_header($editing ? 'Edit Recipe' : 'Add Recipe', 'recipes.php');
 
     <div class="actions" style="margin-top:18px;">
       <button type="submit"><?php echo $editing ? 'Update Recipe' : 'Save Recipe'; ?></button>
-      <a class="btn secondary" href="/HIRA/admin/recipes.php">Cancel</a>
+      <a class="btn secondary" href="/admin/recipes.php">Cancel</a>
     </div>
   </form>
 </section>

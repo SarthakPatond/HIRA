@@ -20,29 +20,42 @@ const INLINE_PLACEHOLDER = encodeURIComponent(`
 
 export const MEDIA_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${INLINE_PLACEHOLDER}`;
 
+const UPLOADS_BASE_URL =
+  import.meta.env.VITE_UPLOADS_BASE_URL || "https://ujjainipoha.com/backend/uploads";
+
 export function resolveMediaUrl(value) {
   if (!value) {
     return "";
   }
 
-  // Stable backend uploads path handling (NO cache-busting)
-  let url;
-  if (value.startsWith("http")) {
-    url = value;
-  } else if (value.startsWith("/HIRA/backend/uploads/")) {
-    url = `http://localhost${value}`;
-  } else if (value.startsWith("/uploads/")) {
-    url = `http://localhost/HIRA/backend${value}`;
-  } else if (
+  // Already a full URL (http/https/data/blob)
+  if (
     /^(?:https?:)?\/\//i.test(value) ||
     value.startsWith("data:") ||
     value.startsWith("blob:")
   ) {
-    url = value;
-  } else if (value.startsWith("/")) {
-    url = value;
+    return value;
+  }
+
+  let url;
+
+  // Legacy dev path: /HIRA/backend/uploads/filename.ext
+  if (value.startsWith("/HIRA/backend/uploads/")) {
+    const filename = value.replace("/HIRA/backend/uploads/", "");
+    url = `${UPLOADS_BASE_URL}/${filename}`;
+
+  // Short uploads path: /uploads/filename.ext
+  } else if (value.startsWith("/uploads/")) {
+    const filename = value.replace("/uploads/", "");
+    url = `${UPLOADS_BASE_URL}/${filename}`;
+
+  // Bare filename (no leading slash) stored directly
+  } else if (!value.startsWith("/")) {
+    url = `${UPLOADS_BASE_URL}/${value}`;
+
+  // Absolute path on the same host (e.g. /some/path)
   } else {
-    url = `/${value.replace(/^\/+/, "")}`;
+    url = value;
   }
 
   // IMPORTANT: do not append Date.now()/random cache-busting params

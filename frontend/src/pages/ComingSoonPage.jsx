@@ -25,7 +25,7 @@ export default function ComingSoonPage() {
           "@type": "CollectionPage",
           name: "Hira FMCG Coming Soon",
           description,
-          url: "http://localhost:5173/coming-soon"
+          url: "https://ujjainipoha.com/coming-soon"
         }}
       />
 

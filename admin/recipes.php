@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_POST['action'] ?? '') === 'dele
         set_flash('error', 'Recipe not found.');
     }
 
-    redirect('/HIRA/admin/recipes.php');
+    redirect('/admin/recipes.php');
 }
 
 $q = trim((string) ($_GET['q'] ?? ''));
@@ -90,11 +90,11 @@ render_admin_header('Recipes', 'recipes.php');
         ?>
       </div>
     </div>
-    <a class="btn" href="/HIRA/admin/recipe-form.php">Add Recipe</a>
+    <a class="btn" href="/admin/recipe-form.php">Add Recipe</a>
   </div>
 
   <div class="form-card" style="padding:16px; margin-bottom:18px;">
-    <form method="get" action="/HIRA/admin/recipes.php">
+    <form method="get" action="/admin/recipes.php">
       <div class="form-grid" style="grid-template-columns: 1.6fr 1fr 1fr; align-items:end;">
         <div class="field">
           <label for="q">Search</label>
@@ -121,7 +121,7 @@ render_admin_header('Recipes', 'recipes.php');
 
       <div class="actions" style="margin-top:14px;">
         <button type="submit">Apply</button>
-        <a class="btn secondary" href="/HIRA/admin/recipes.php">Reset</a>
+        <a class="btn secondary" href="/admin/recipes.php">Reset</a>
       </div>
     </form>
   </div>
@@ -168,7 +168,7 @@ render_admin_header('Recipes', 'recipes.php');
             </td>
             <td>
               <div class="actions">
-                <a class="btn secondary" href="/HIRA/admin/recipe-form.php?id=<?php echo (int) $recipe['id']; ?>">Edit</a>
+                <a class="btn secondary" href="/admin/recipe-form.php?id=<?php echo (int) $recipe['id']; ?>">Edit</a>
                 <form method="post" onsubmit="return confirm('Delete this recipe permanently?');">
                   <input type="hidden" name="action" value="delete">
                   <input type="hidden" name="id" value="<?php echo (int) $recipe['id']; ?>">

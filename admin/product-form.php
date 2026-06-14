@@ -11,7 +11,7 @@ $product = $editing ? fetch_product_by_id($id) : null;
 
 if ($editing && !$product) {
     set_flash('error', 'Product not found.');
-    redirect('/HIRA/admin/products.php');
+    redirect('/admin/products.php');
 }
 
 $formData = [
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             set_flash('success', 'Product added successfully.');
         }
 
-        redirect('/HIRA/admin/products.php');
+        redirect('/admin/products.php');
     } catch (Throwable $exception) {
         $error = $exception->getMessage();
     }
@@ -157,7 +157,7 @@ render_admin_header($editing ? 'Edit Product' : 'Add Product', 'products.php');
 
     <div class="actions">
       <button type="submit"><?php echo $editing ? 'Update Product' : 'Save Product'; ?></button>
-      <a class="btn secondary" href="/HIRA/admin/products.php">Cancel</a>
+      <a class="btn secondary" href="/admin/products.php">Cancel</a>
     </div>
   </form>
 </section>

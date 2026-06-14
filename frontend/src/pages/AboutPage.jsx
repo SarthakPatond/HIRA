@@ -25,7 +25,7 @@ export default function AboutPage() {
           "@type": "AboutPage",
           name: "About Hira FMCG",
           description,
-          url: "http://localhost:5173/about"
+          url: "https://ujjainipoha.com/about"
         }}
       />
 

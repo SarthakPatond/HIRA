@@ -226,7 +226,7 @@ export default function HomePage() {
           "@type": "WebSite",
           name: "Hira FMCG",
           description,
-          url: "http://localhost:5173/"
+          url: "https://ujjainipoha.com/"
         }}
       />
 

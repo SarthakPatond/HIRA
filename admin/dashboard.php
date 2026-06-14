@@ -45,7 +45,7 @@ render_admin_header('Overview', 'dashboard.php');
         <p class="brand-kicker" style="color:#5e7c39;">Catalog Snapshot</p>
         <h3>Latest Products</h3>
       </div>
-      <a class="btn" href="/HIRA/admin/product-form.php">Add Product</a>
+      <a class="btn" href="/admin/product-form.php">Add Product</a>
     </div>
     <div class="table-wrap">
       <table>

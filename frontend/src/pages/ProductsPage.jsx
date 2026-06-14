@@ -53,7 +53,7 @@ export default function ProductsPage() {
           "@type": "CollectionPage",
           name: "Hira FMCG Products",
           description,
-          url: "http://localhost:5173/products"
+          url: "https://ujjainipoha.com/products"
         }}
       />
 

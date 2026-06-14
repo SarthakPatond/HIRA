@@ -25,7 +25,7 @@ function render_admin_header(string $title, string $activePage): void
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title><?php echo e($title); ?> | Hira Admin</title>
-      <link rel="stylesheet" href="/HIRA/admin/assets/admin.css?v=<?php echo e($adminCssVersion); ?>">
+      <link rel="stylesheet" href="/admin/assets/admin.css?v=<?php echo e($adminCssVersion); ?>">
     </head>
     <body>
       <div class="admin-shell">
@@ -37,7 +37,7 @@ function render_admin_header(string $title, string $activePage): void
           </div>
           <nav class="nav-list">
             <?php foreach (admin_nav_items() as $url => $label): ?>
-              <a class="<?php echo $activePage === $url ? 'active' : ''; ?>" href="/HIRA/admin/<?php echo e($url); ?>">
+              <a class="<?php echo $activePage === $url ? 'active' : ''; ?>" href="/admin/<?php echo e($url); ?>">
                 <?php echo e($label); ?>
               </a>
             <?php endforeach; ?>
@@ -47,7 +47,7 @@ function render_admin_header(string $title, string $activePage): void
               <span>Signed in as</span>
               <strong><?php echo e(admin_user()['username'] ?? 'admin'); ?></strong>
             </div>
-            <a class="logout-link" href="/HIRA/admin/logout.php">Logout</a>
+            <a class="logout-link" href="/admin/logout.php">Logout</a>
           </div>
         </aside>
         <main class="main-panel">

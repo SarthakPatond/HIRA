@@ -92,7 +92,7 @@ function base_project_path(): string
         }
     }
 
-    return '/HIRA';
+    return '';
 }
 
 function base_project_url(): string
@@ -101,7 +101,7 @@ function base_project_url(): string
     $host = trim((string) ($_SERVER['HTTP_HOST'] ?? ''));
 
     if ($host === '') {
-        return $path !== '' ? $path : '/HIRA';
+        return $path !== '' ? $path : '';
     }
 
     return request_scheme() . '://' . $host . ($path !== '' ? $path : '');

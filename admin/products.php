@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     set_flash('error', 'Product not found.');
   }
 
-  redirect('/HIRA/admin/products.php');
+  redirect('/admin/products.php');
 }
 
 $products = fetch_products(true);
@@ -83,11 +83,11 @@ render_admin_header('Products', 'products.php');
         ?>
       </div>
     </div>
-    <a class="btn" href="/HIRA/admin/product-form.php">Add Product</a>
+    <a class="btn" href="/admin/product-form.php">Add Product</a>
   </div>
 
   <div class="form-card" style="padding:16px; margin-bottom:18px;">
-    <form method="get" action="/HIRA/admin/products.php">
+    <form method="get" action="/admin/products.php">
       <div class="form-grid" style="grid-template-columns: 1.6fr 1fr 1fr; align-items:end;">
         <div class="field">
           <label for="q">Search</label>
@@ -117,7 +117,7 @@ render_admin_header('Products', 'products.php');
 
       <div class="actions" style="margin-top:14px;">
         <button type="submit">Apply</button>
-        <a class="btn secondary" href="/HIRA/admin/products.php">Reset</a>
+        <a class="btn secondary" href="/admin/products.php">Reset</a>
       </div>
     </form>
   </div>
@@ -157,7 +157,7 @@ render_admin_header('Products', 'products.php');
             </td>
             <td>
               <div class="actions">
-                <a class="btn secondary" href="/HIRA/admin/product-form.php?id=<?php echo $product['id']; ?>">Edit</a>
+                <a class="btn secondary" href="/admin/product-form.php?id=<?php echo $product['id']; ?>">Edit</a>
                 <form method="post" onsubmit="return confirm('Delete this product permanently?');">
                   <input type="hidden" name="action" value="delete">
                   <input type="hidden" name="id" value="<?php echo $product['id']; ?>">

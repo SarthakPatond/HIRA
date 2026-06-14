@@ -49,7 +49,7 @@ function require_admin_login(): void
         return;
     }
 
-    header('Location: /HIRA/admin/index.php');
+    header('Location: /admin/index.php');
     exit;
 }
 

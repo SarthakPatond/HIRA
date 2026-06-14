@@ -56,7 +56,7 @@ export default function InsightsPage() {
           "@type": "Blog",
           name: "Hira FMCG Insights",
           description,
-          url: "http://localhost:5173/insights"
+          url: "https://ujjainipoha.com/insights"
         }}
       />
 

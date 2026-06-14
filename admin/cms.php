@@ -55,7 +55,7 @@ function recipe_preview_url(string $slug): string
     $frontendBase = trim((string) getenv('HIRA_FRONTEND_URL'));
 
     if ($frontendBase === '') {
-        $frontendBase = 'http://localhost:5173';
+        $frontendBase = 'https://ujjainipoha.com';
     }
 
     return rtrim($frontendBase, '/') . '/recipes/' . rawurlencode($slug);
@@ -265,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             set_flash('success', $editing ? 'Recipe updated successfully.' : 'Recipe added successfully.');
-            redirect('/HIRA/admin/cms.php?section=recipes');
+            redirect('/admin/cms.php?section=recipes');
         }
 
         // Bulk actions: delete recipe
@@ -289,7 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             set_flash('success', 'Recipe deleted successfully.');
-            redirect('/HIRA/admin/cms.php?section=recipes');
+            redirect('/admin/cms.php?section=recipes');
         }
 
         // toggle publish/featured
@@ -301,7 +301,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 get_db()->prepare("UPDATE recipes SET {$field}=:v WHERE id=:id")->execute(['v' => $value ? 1 : 0, 'id' => $id]);
                 set_flash('success', 'Recipe updated.');
             }
-            redirect('/HIRA/admin/cms.php?section=recipes');
+            redirect('/admin/cms.php?section=recipes');
         }
 
         if ($section === 'recipes_duplicate') {
@@ -409,7 +409,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             set_flash('success', 'Recipe duplicated as a draft copy.');
-            redirect('/HIRA/admin/cms.php?section=recipes&recipe_id=' . $newRecipeId);
+            redirect('/admin/cms.php?section=recipes&recipe_id=' . $newRecipeId);
         }
 
         if ($section === 'home') {
@@ -538,7 +538,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             update_page_content('home', $updatedHome);
             set_flash('success', 'Homepage content updated successfully.');
-            redirect('/HIRA/admin/cms.php');
+            redirect('/admin/cms.php');
         }
 
         if ($section === 'about') {
@@ -574,7 +574,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             update_page_content('about', $updatedAbout);
             set_flash('success', 'About page content updated successfully.');
-            redirect('/HIRA/admin/cms.php');
+            redirect('/admin/cms.php');
         }
 
         if ($section === 'contact') {
@@ -590,7 +590,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             update_page_content('contact', $updatedContact);
             set_flash('success', 'Contact details updated successfully.');
-            redirect('/HIRA/admin/cms.php');
+            redirect('/admin/cms.php');
         }
     } catch (Throwable $exception) {
         if (str_starts_with($section, 'recipes')) {
@@ -1200,7 +1200,7 @@ render_admin_header('CMS Content', 'cms.php');
             </div>
             <div class="actions recipe-toolbar-actions">
               <button type="submit">Apply Filters</button>
-              <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">Reset</a>
+              <a class="btn secondary" href="/admin/cms.php?section=recipes">Reset</a>
             </div>
           </form>
         </div>
@@ -1292,7 +1292,7 @@ render_admin_header('CMS Content', 'cms.php');
                   </td>
                   <td>
                     <div class="recipe-action-grid">
-                      <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes&recipe_id=<?php echo $recipeId; ?>">Edit</a>
+                      <a class="btn secondary" href="/admin/cms.php?section=recipes&recipe_id=<?php echo $recipeId; ?>">Edit</a>
                       <?php if ($recipeIsPublished): ?>
                         <a class="btn secondary" href="<?php echo e(recipe_preview_url($recipeSlug)); ?>" target="_blank" rel="noreferrer">Preview</a>
                       <?php else: ?>
@@ -1337,7 +1337,7 @@ render_admin_header('CMS Content', 'cms.php');
               <a class="btn secondary" href="<?php echo e($previewLink); ?>" target="_blank" rel="noreferrer">Preview Current</a>
             <?php endif; ?>
             <?php if ($recipeEditingId > 0): ?>
-              <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">+ Add New</a>
+              <a class="btn secondary" href="/admin/cms.php?section=recipes">+ Add New</a>
             <?php endif; ?>
           </div>
         </div>
@@ -1536,7 +1536,7 @@ render_admin_header('CMS Content', 'cms.php');
 
           <div class="actions" style="margin-top:18px;">
             <button type="submit"><?php echo $recipeEditingId > 0 ? 'Update Recipe' : 'Save Recipe'; ?></button>
-            <a class="btn secondary" href="/HIRA/admin/cms.php?section=recipes">Cancel</a>
+            <a class="btn secondary" href="/admin/cms.php?section=recipes">Cancel</a>
           </div>
         </form>
       </div>

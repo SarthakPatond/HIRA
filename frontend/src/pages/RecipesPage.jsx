@@ -90,7 +90,7 @@ export default function RecipesPage() {
           "@type": "CollectionPage",
           name: "Hira FMCG Recipes",
           description,
-          url: "http://localhost:5173/recipes"
+          url: "https://ujjainipoha.com/recipes"
         }}
       />
 
